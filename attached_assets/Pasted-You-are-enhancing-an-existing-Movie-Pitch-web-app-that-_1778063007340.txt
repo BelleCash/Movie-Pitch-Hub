@@ -1,0 +1,155 @@
+You are enhancing an existing Movie Pitch web app that already:
+
+- Has a premium cinematic UI
+- Uses Supabase as backend
+- Displays pitches (title, genre, image, likes)
+
+Your task is to add ADVANCED FEATURES without breaking the UI.
+
+IMPORTANT:
+- Do NOT redesign the UI
+- Do NOT remove existing features
+- Only extend functionality cleanly
+
+-----------------------------------
+🔄 PART 1 — REAL-TIME UPDATES (LIKES AUTO-REFRESH)
+-----------------------------------
+
+GOAL:
+When a user likes a pitch, all users see updates instantly.
+
+IMPLEMENT:
+
+1. Use Supabase Realtime subscription:
+
+- Subscribe to "pitches" table
+- Listen for UPDATE events
+
+2. On update:
+- Re-fetch data OR update DOM directly
+
+Example logic:
+
+supabase
+  .channel('pitches-channel')
+  .on(
+    'postgres_changes',
+    {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'pitches'
+    },
+    (payload) => {
+      loadPitches();
+    }
+  )
+  .subscribe();
+
+-----------------------------------
+🖼️ PART 2 — IMAGE UPLOAD SYSTEM
+-----------------------------------
+
+GOAL:
+Allow users to upload a movie poster instead of pasting image URL.
+
+IMPLEMENT:
+
+1. Add file input to "Submit Pitch" form
+
+2. Create Supabase Storage bucket:
+- Name: "posters"
+
+3. Upload image:
+
+async function uploadImage(file) {
+  const fileName = Date.now() + "-" + file.name;
+
+  const { data, error } = await supabase.storage
+    .from('posters')
+    .upload(fileName, file);
+
+  if (error) return null;
+
+  const { data: publicUrl } = supabase.storage
+    .from('posters')
+    .getPublicUrl(fileName);
+
+  return publicUrl.publicUrl;
+}
+
+4. When submitting pitch:
+- Upload image first
+- Save returned URL into "image" column
+
+-----------------------------------
+🧠 PART 3 — SMART FILTERING SYSTEM
+-----------------------------------
+
+GOAL:
+Advanced filtering for better UX.
+
+-----------------------------------
+
+1. MULTI-GENRE FILTER
+
+- Allow selecting multiple genres
+- Store selected genres in array
+
+Filter logic:
+
+filtered = pitches.filter(p =>
+  selectedGenres.length === 0 ||
+  selectedGenres.includes(p.genre)
+);
+
+-----------------------------------
+
+2. SEARCH OPTIMIZATION
+
+- Add search input
+- Case-insensitive matching
+
+filter by:
+
+p.title.toLowerCase().includes(searchQuery.toLowerCase())
+
+-----------------------------------
+
+3. COMBINED FILTER
+
+Apply BOTH search + genre:
+
+filtered = pitches.filter(p =>
+  (selectedGenres.length === 0 || selectedGenres.includes(p.genre)) &&
+  p.title.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+-----------------------------------
+
+4. OPTIONAL UX UPGRADE
+
+- Add "Clear Filters" button
+- Show "No results found" state
+
+-----------------------------------
+⚠️ CONSTRAINTS
+-----------------------------------
+
+- Keep code clean and modular
+- Do NOT duplicate logic
+- Reuse existing renderPitches()
+- Maintain performance
+
+-----------------------------------
+🎯 EXPECTED RESULT
+-----------------------------------
+
+- Likes update in real-time
+- Users can upload images
+- Filtering feels fast and smart
+- App feels like a real production product
+
+-----------------------------------
+FINAL INSTRUCTION:
+
+Refactor carefully and integrate features smoothly into the existing codebase.
