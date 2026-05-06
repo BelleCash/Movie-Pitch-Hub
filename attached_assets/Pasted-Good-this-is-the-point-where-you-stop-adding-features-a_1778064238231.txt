@@ -1,0 +1,345 @@
+Good—this is the point where you stop “adding features” and start **rebuilding it like a real product**.
+
+Here’s your **FINAL REPLIT MASTER PROMPT** for:
+
+⚛️ React conversion
+🔐 Supabase Auth
+⚡ Realtime updates
+
+---
+
+# 🚀 FINAL REPLIT PROMPT — PITCH APP (REACT + AUTH + REALTIME)
+
+Paste this into Replit AI exactly as-is:
+
+---
+
+## 🧠 PROJECT CONTEXT
+
+You are converting an existing **Movie Pitch web app** into a production-ready system.
+
+The current app:
+
+* Uses vanilla JavaScript
+* Uses Supabase for database only
+* Has basic UI
+
+Your task:
+👉 Convert it into a **React-based SaaS-style app**
+👉 Add **Supabase Authentication**
+👉 Add **Realtime updates**
+👉 Keep UI design intact but improve structure and scalability
+
+⚠️ IMPORTANT RULES:
+
+* DO NOT redesign UI completely
+* DO NOT remove Supabase integration
+* DO NOT add unnecessary libraries (no Redux, no overengineering)
+* Focus on CLEAN ARCHITECTURE + FUNCTIONALITY
+
+---
+
+# ⚛️ PART 1 — REACT ARCHITECTURE MIGRATION
+
+## 📁 REQUIRED STRUCTURE
+
+Create this exact structure:
+
+```bash id="react-structure"
+/src
+  /components
+    Navbar.jsx
+    Hero.jsx
+    PitchCard.jsx
+    PitchList.jsx
+    AuthModal.jsx
+    CreatePitchForm.jsx
+
+  /pages
+    Home.jsx
+    Dashboard.jsx
+
+  /context
+    AuthContext.jsx
+
+  /lib
+    supabase.js
+    realtime.js
+
+  App.jsx
+  main.jsx
+```
+
+---
+
+## 🧩 COMPONENT REQUIREMENTS
+
+### Navbar.jsx
+
+* Sticky navbar
+* Shows:
+
+  * App name
+  * Login / Logout button
+  * User state (logged in / guest)
+
+---
+
+### Hero.jsx
+
+* Cinematic hero section
+* CTA button:
+
+  * “Start Pitching”
+* If logged in → go to dashboard
+
+---
+
+### PitchCard.jsx
+
+Each pitch must display:
+
+* title
+* genre
+* image
+* likes count
+* like button
+
+Add:
+
+* hover scale (smooth)
+* gradient overlay on image
+* transition: 300ms
+
+---
+
+### PitchList.jsx
+
+* Fetch pitches from Supabase
+* Render PitchCard list
+* Auto refresh via realtime subscription
+
+---
+
+### AuthModal.jsx
+
+* Email/password login
+* Signup + login toggle
+* Uses Supabase Auth
+
+---
+
+### CreatePitchForm.jsx
+
+* Title input
+* Genre input
+* Image URL input
+* Saves to Supabase `pitches` table
+* Only visible if user is logged in
+
+---
+
+# 🔐 PART 2 — SUPABASE AUTH SYSTEM
+
+## AUTH RULES
+
+Implement Supabase authentication:
+
+* Email + password signup
+* Email + password login
+* Persistent session
+* Global user state using Context API
+
+---
+
+## AUTH CONTEXT
+
+Create global auth state:
+
+* user
+* setUser
+* session persistence on refresh
+
+App must:
+
+* detect logged-in user on load
+* update UI instantly on login/logout
+
+---
+
+# 📦 DATABASE STRUCTURE
+
+Use this table:
+
+```sql id="pitches-table"
+create table pitches (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid,
+  title text,
+  genre text,
+  image text,
+  likes int default 0,
+  created_at timestamp default now()
+);
+```
+
+---
+
+# ⚡ PART 3 — REALTIME SYSTEM (IMPORTANT)
+
+## ENABLE IN SUPABASE
+
+Turn ON realtime for table:
+
+* pitches (INSERT, UPDATE, DELETE)
+
+---
+
+## FRONTEND REALTIME LISTENER
+
+Create realtime handler:
+
+```javascript id="realtime"
+supabase
+  .channel("pitches")
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "pitches",
+    },
+    (payload) => {
+      console.log("Realtime update:", payload);
+      refreshPitchList();
+    }
+  )
+  .subscribe();
+```
+
+---
+
+## BEHAVIOR REQUIRED
+
+When database changes happen:
+
+* new pitch → appears instantly
+* like update → updates instantly
+* delete → removed instantly
+
+NO page refresh required.
+
+---
+
+# ❤️ LIKE SYSTEM
+
+* Update likes in Supabase
+* Trigger realtime update automatically
+
+```javascript id="like"
+await supabase
+  .from("pitches")
+  .update({ likes: currentLikes + 1 })
+  .eq("id", id);
+```
+
+---
+
+# 🧠 APP FLOW
+
+## IF USER NOT LOGGED IN:
+
+* Can view pitches only
+* Cannot create or like
+
+## IF USER LOGGED IN:
+
+* Can create pitches
+* Can like pitches
+* Has dashboard access
+
+---
+
+# 🧭 DASHBOARD
+
+Create `/pages/Dashboard.jsx`
+
+Must show:
+
+* “My Pitches” (filtered by user_id)
+* Create pitch form
+* Logged-in only access
+
+---
+
+# 🎯 FINAL OUTPUT EXPECTATION
+
+After completion:
+
+## UI
+
+* Clean cinematic UI preserved
+* Improved spacing + structure
+
+## ARCHITECTURE
+
+* Fully React component-based
+* Clean folder separation
+* Context-based auth system
+
+## BACKEND
+
+* Supabase database connected
+* Auth fully working
+* Realtime updates active
+
+## EXPERIENCE
+
+* Feels like a real SaaS product
+* Instagram-like live updates
+* User accounts + creator system
+
+---
+
+# 🚀 SUCCESS CRITERIA
+
+App must:
+
+✔ Work without refresh
+✔ Support login/signup
+✔ Allow pitch creation (logged-in users only)
+✔ Show realtime updates instantly
+✔ Be structured like production React app
+
+---
+
+## ⚠️ FINAL INSTRUCTION
+
+Keep everything:
+
+* simple
+* modular
+* scalable
+* production-quality
+
+Do NOT overengineer.
+
+---
+
+# 🏁 END GOAL
+
+You are building:
+
+> A real-time, authenticated, React-based Pitch platform (SaaS MVP)
+
+---
+
+If you want next upgrade after this, I can help you turn it into:
+
+🔥 “Nigerian Product Hunt for Movie Ideas”
+🔥 add image uploads (Supabase Storage)
+🔥 add creator profiles + follow system
+🔥 deploy it properly (Vercel + env security)
+
+Just say:
+👉 **“make it production SaaS”**
