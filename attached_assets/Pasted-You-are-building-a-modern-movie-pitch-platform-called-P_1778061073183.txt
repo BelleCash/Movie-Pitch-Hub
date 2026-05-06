@@ -1,0 +1,136 @@
+You are building a modern movie pitch platform called "PitchFlix".
+
+GOAL:
+Create a visually stunning, production-quality UI similar to Netflix/Dribbble-style movie apps. It must work as BOTH a responsive website and feel like a mobile app.
+
+TECH STACK:
+- HTML
+- Tailwind CSS (CDN)
+- Vanilla JavaScript
+
+DO NOT use React.
+
+-----------------------------------
+
+DESIGN SYSTEM:
+
+Use a dark cinematic theme:
+- Background: #0b0b0f
+- Card: #12121a
+- Accent: #e50914 (Netflix red)
+- Text: #ffffff
+- Muted text: #9ca3af
+
+Typography:
+- Clean, modern sans-serif
+- Bold titles, subtle secondary text
+
+-----------------------------------
+
+LAYOUT STRUCTURE:
+
+1. NAVBAR
+- Logo: "PitchFlix"
+- Simple nav (Home, Trending, Submit)
+- Sticky top
+
+2. HERO SECTION
+- Featured movie/pitch
+- Large background image
+- Gradient overlay
+- Title, short description, CTA button
+
+3. FILTER BAR
+- Genre filters (Action, Drama, Comedy, Nollywood)
+- Horizontal scroll on mobile
+
+4. GALLERY GRID (MAIN FOCUS)
+- Responsive grid:
+  - 1 column (mobile)
+  - 2–3 (tablet)
+  - 4–5 (desktop)
+
+-----------------------------------
+
+MOVIE CARD DESIGN (IMPORTANT):
+
+Each card must include:
+- Poster image
+- Gradient overlay (bottom fade)
+- Title + genre
+- Like button (heart icon)
+- Smooth hover animation:
+  - scale up slightly
+  - shadow glow
+
+Style:
+- Rounded corners (2xl)
+- Soft shadows
+- Clean spacing
+
+-----------------------------------
+
+INTERACTIONS (JavaScript):
+
+1. LIKE BUTTON
+- Toggle like state
+- Increase/decrease like count
+
+2. FILTER SYSTEM
+- Filter cards by genre dynamically
+
+3. SEARCH BAR
+- Filter movies by title
+
+-----------------------------------
+
+DATA:
+
+Use a small mock dataset in JavaScript like:
+- title
+- genre
+- image
+- likes
+
+Do NOT use external APIs yet.
+
+-----------------------------------
+
+MOBILE-FIRST EXPERIENCE:
+
+- Make UI feel like an app
+- Smooth scrolling
+- Large touch targets
+- Optional bottom navigation bar
+
+-----------------------------------
+
+ANIMATIONS:
+
+- Hover: scale + shadow
+- Smooth transitions (300ms)
+- Subtle fade-in on load
+
+-----------------------------------
+
+OUTPUT REQUIREMENTS:
+
+- Everything in ONE HTML file
+- Use Tailwind via CDN
+- Clean, readable structure
+- Well-organized sections (navbar, hero, grid, etc.)
+
+-----------------------------------
+
+EXTRA (if possible):
+
+- Add a "Submit Pitch" modal form UI (no backend needed)
+- Add a dark glassmorphism effect on navbar
+
+-----------------------------------
+
+IMPORTANT:
+
+The UI must look premium, modern, and cinematic — NOT basic.
+
+Focus heavily on spacing, alignment, and visual hierarchy.

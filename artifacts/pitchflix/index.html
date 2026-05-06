@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>PitchFlix — Where Stories Begin</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0b0b0f',
+            card: '#12121a',
+            accent: '#e50914',
+            'accent-dark': '#b0070f',
+            muted: '#9ca3af',
+            surface: '#1a1a26',
+            'surface-2': '#22223a',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.6s ease-out forwards',
+            'fade-up': 'fadeUp 0.5s ease-out forwards',
+            'slide-down': 'slideDown 0.3s ease-out',
+            'scale-in': 'scaleIn 0.2s ease-out',
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+            fadeUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            slideDown: { from: { opacity: '0', transform: 'translateY(-10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            scaleIn: { from: { opacity: '0', transform: 'scale(0.95)' }, to: { opacity: '1', transform: 'scale(1)' } },
+          },
+          backdropBlur: { xs: '2px' },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: #0b0b0f;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #12121a; }
+    ::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
+
+    /* Glassmorphism navbar */
+    .glass-nav {
+      background: rgba(11, 11, 15, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Movie card */
+    .movie-card {
+      background: #12121a;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+      position: relative;
+    }
+    .movie-card:hover {
+      transform: scale(1.04) translateY(-4px);
+      box-shadow: 0 20px 60px rgba(229, 9, 20, 0.25), 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .movie-card img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s;
+    }
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(11,11,15,0.97) 0%, rgba(11,11,15,0.5) 45%, rgba(11,11,15,0) 70%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px;
+    }
+    .card-hover-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(229,9,20,0.08) 0%, rgba(0,0,0,0) 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border-radius: 16px;
+      border: 1px solid transparent;
+    }
+    .movie-card:hover .card-hover-overlay {
+      opacity: 1;
+      border-color: rgba(229,9,20,0.25);
+    }
+
+    /* Like button */
+    .like-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px;
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+    }
+    .like-btn:hover { background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.4); }
+    .like-btn.liked { background: rgba(229,9,20,0.3); border-color: #e50914; color: #e50914; }
+    .like-btn.liked svg { fill: #e50914; stroke: #e50914; }
+    .like-btn svg { transition: transform 0.2s; }
+    .like-btn:hover svg { transform: scale(1.2); }
+
+    /* Filter buttons */
+    .filter-btn {
+      padding: 8px 20px;
+      border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover { border-color: rgba(229,9,20,0.5); color: #ffffff; background: rgba(229,9,20,0.1); }
+    .filter-btn.active { background: #e50914; border-color: #e50914; color: #ffffff; font-weight: 600; }
+
+    /* Hero */
+    .hero-section {
+      position: relative;
+      height: 85vh;
+      min-height: 500px;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center top;
+      transition: opacity 0.8s ease;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(11,11,15,0.92) 0%,
+        rgba(11,11,15,0.65) 40%,
+        rgba(11,11,15,0.15) 70%,
+        rgba(11,11,15,0) 100%
+      ),
+      linear-gradient(
+        to top,
+        rgba(11,11,15,1) 0%,
+        rgba(11,11,15,0.4) 30%,
+        rgba(11,11,15,0) 60%
+      );
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 6% 80px;
+    }
+
+    /* Search bar */
+    .search-input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 50px;
+      padding: 10px 20px 10px 44px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+      width: 220px;
+    }
+    .search-input:focus { border-color: rgba(229,9,20,0.5); background: rgba(255,255,255,0.1); width: 280px; }
+    .search-input::placeholder { color: #9ca3af; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: #12121a;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 480px;
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.25s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-backdrop.open .modal-box { transform: scale(1) translateY(0); }
+
+    /* Form inputs */
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-input:focus { border-color: #e50914; }
+    .form-input::placeholder { color: #6b7280; }
+
+    /* Genre badge */
+    .genre-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(229,9,20,0.2);
+      color: #f87171;
+      border: 1px solid rgba(229,9,20,0.25);
+    }
+
+    /* Card stagger */
+    .movie-card { opacity: 0; animation: fadeUp 0.4s ease-out forwards; }
+
+    /* Bottom nav */
+    .bottom-nav {
+      background: rgba(11,11,15,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Rating stars */
+    .rating { color: #f59e0b; font-size: 11px; letter-spacing: 1px; }
+
+    /* Scrollbar hidden for filter */
+    .filter-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 0%, #e50914 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Red glow button */
+    .btn-primary {
+      background: #e50914;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(229,9,20,0.3);
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-primary:hover { background: #b0070f; box-shadow: 0 6px 28px rgba(229,9,20,0.5); transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); }
+
+    /* Hidden utility */
+    .hidden { display: none !important; }
+
+    /* Nav link */
+    .nav-link {
+      color: #9ca3af;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-link:hover, .nav-link.active { color: #ffffff; }
+    .nav-link.active { border-bottom: 2px solid #e50914; padding-bottom: 2px; }
+
+    /* Trending badge */
+    .trending-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: linear-gradient(135deg, #e50914, #ff4444);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 3;
+    }
+
+    /* Year badge */
+    .year-badge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 2px 6px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+<!-- STICKY NAVBAR -->
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50">
+  <div style="max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; justify-content:space-between; height:64px;">
+    <!-- Logo -->
+    <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="scrollToTop()">
+      <div style="width:32px; height:32px; background:#e50914; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;">🎬</div>
+      <span style="font-size:20px; font-weight:800; letter-spacing:-0.03em;">Pitch<span style="color:#e50914;">Flix</span></span>
+    </div>
+
+    <!-- Nav links (desktop) -->
+    <div class="nav-links" style="display:flex; align-items:center; gap:32px;">
+      <span class="nav-link active" id="nav-home" onclick="setNav('home')">Home</span>
+      <span class="nav-link" id="nav-trending" onclick="setNav('trending')">Trending</span>
+      <span class="nav-link" id="nav-submit" onclick="openModal()">Submit</span>
+    </div>
+
+    <!-- Right: search + submit -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="position:relative; display:flex; align-items:center;">
+        <svg style="position:absolute; left:14px; color:#9ca3af; pointer-events:none;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-input" type="search" id="search-input" placeholder="Search pitches…" oninput="filterMovies()">
+      </div>
+      <button class="btn-primary" onclick="openModal()" style="padding:10px 18px; border-radius:8px; font-size:13px;">
+        + Submit Pitch
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="hero-section" id="hero">
+  <div class="hero-bg" id="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80&auto=format&fit=crop');"></div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content animate-fade-in" style="padding-top:64px;">
+    <div style="max-width:520px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <span style="background:rgba(229,9,20,0.2); color:#f87171; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 12px; border-radius:4px; border:1px solid rgba(229,9,20,0.3);">Featured Pitch</span>
+        <span class="rating">★★★★★</span>
+        <span style="color:#9ca3af; font-size:13px;">2024</span>
+      </div>
+      <h1 style="font-size:clamp(2rem,5vw,3.5rem); font-weight:900; line-height:1.05; letter-spacing:-0.03em; margin-bottom:16px;">
+        Beyond the <span style="color:#e50914;">Horizon</span>
+      </h1>
+      <p style="font-size:15px; color:#d1d5db; line-height:1.7; margin-bottom:28px; max-width:420px;">
+        A gripping sci-fi epic about the last generation of Earth's survivors who must terraform a dying planet before time runs out. A story of sacrifice, humanity, and hope among the stars.
+      </p>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <button class="btn-primary" style="display:flex; align-items:center; gap:8px;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Watch Pitch
+        </button>
+        <button class="btn-ghost" style="display:flex; align-items:center; gap:8px;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          More Info
+        </button>
+      </div>
+      <div style="display:flex; align-items:center; gap:20px; margin-top:24px;">
+        <div style="display:flex; align-items:center; gap:6px; color:#9ca3af; font-size:13px;">
+          <svg width="14" height="14" fill="none" stroke="#e50914" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="hero-likes">2,847 likes</span>
+        </div>
+        <div style="color:#9ca3af; font-size:13px;">Sci-Fi · Action · Drama</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main style="max-width:1400px; margin:0 auto; padding:0 24px 120px;">
+
+  <!-- SECTION HEADER + FILTER BAR -->
+  <div style="padding:40px 0 28px;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:20px; margin-bottom:24px;">
+      <div>
+        <h2 style="font-size:22px; font-weight:800; letter-spacing:-0.02em;">All Pitches</h2>
+        <p style="color:#9ca3af; font-size:13px; margin-top:4px;"><span id="movie-count">12</span> pitches available</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; color:#9ca3af; font-size:13px;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Sort: Recent
+      </div>
+    </div>
+
+    <!-- Filter scroll -->
+    <div class="filter-scroll" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+      <button class="filter-btn active" data-genre="All" onclick="setFilter(this, 'All')">All</button>
+      <button class="filter-btn" data-genre="Action" onclick="setFilter(this, 'Action')">Action</button>
+      <button class="filter-btn" data-genre="Drama" onclick="setFilter(this, 'Drama')">Drama</button>
+      <button class="filter-btn" data-genre="Comedy" onclick="setFilter(this, 'Comedy')">Comedy</button>
+      <button class="filter-btn" data-genre="Nollywood" onclick="setFilter(this, 'Nollywood')">Nollywood</button>
+      <button class="filter-btn" data-genre="Sci-Fi" onclick="setFilter(this, 'Sci-Fi')">Sci-Fi</button>
+      <button class="filter-btn" data-genre="Thriller" onclick="setFilter(this, 'Thriller')">Thriller</button>
+      <button class="filter-btn" data-genre="Romance" onclick="setFilter(this, 'Romance')">Romance</button>
+      <button class="filter-btn" data-genre="Horror" onclick="setFilter(this, 'Horror')">Horror</button>
+    </div>
+  </div>
+
+  <!-- No results message -->
+  <div id="no-results" class="hidden" style="text-align:center; padding:80px 20px;">
+    <div style="font-size:48px; margin-bottom:16px;">🎬</div>
+    <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">No pitches found</h3>
+    <p style="color:#9ca3af; font-size:14px;">Try a different filter or search term.</p>
+  </div>
+
+  <!-- GALLERY GRID -->
+  <div id="movies-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:20px;">
+    <!-- Cards injected by JS -->
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav" style="position:fixed; bottom:0; left:0; right:0; z-index:50; display:none;" id="bottom-nav">
+  <div style="display:flex; align-items:center; justify-content:space-around; padding:12px 0; padding-bottom:calc(12px + env(safe-area-inset-bottom));">
+    <button onclick="setNav('home')" style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-home">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button onclick="setNav('trending')" style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-trending">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Trending
+    </button>
+    <button onclick="openModal()" style="background:#e50914; border:none; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; cursor:pointer; box-shadow:0 4px 20px rgba(229,9,20,0.4); margin-bottom:4px;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <button style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-search" onclick="document.getElementById('search-input').focus()">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      Search
+    </button>
+    <button style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </button>
+  </div>
+</div>
+
+<!-- SUBMIT PITCH MODAL -->
+<div class="modal-backdrop" id="modal" onclick="closeModalOnBackdrop(event)">
+  <div class="modal-box" id="modal-box">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+      <div>
+        <h2 style="font-size:20px; font-weight:800; letter-spacing:-0.02em;">Submit Your Pitch</h2>
+        <p style="color:#9ca3af; font-size:13px; margin-top:4px;">Share your story with the world</p>
+      </div>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9ca3af; transition:all 0.2s; font-size:18px;" onmouseover="this.style.background='rgba(229,9,20,0.2)';this.style.color='white';" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='#9ca3af';">×</button>
+    </div>
+
+    <form onsubmit="submitPitch(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Movie Title *</label>
+        <input class="form-input" type="text" placeholder="Enter your pitch title…" required id="form-title">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Genre *</label>
+          <select class="form-input" required id="form-genre" style="cursor:pointer;">
+            <option value="" disabled selected style="background:#12121a;">Select genre…</option>
+            <option value="Action" style="background:#12121a;">Action</option>
+            <option value="Drama" style="background:#12121a;">Drama</option>
+            <option value="Comedy" style="background:#12121a;">Comedy</option>
+            <option value="Nollywood" style="background:#12121a;">Nollywood</option>
+            <option value="Sci-Fi" style="background:#12121a;">Sci-Fi</option>
+            <option value="Thriller" style="background:#12121a;">Thriller</option>
+            <option value="Romance" style="background:#12121a;">Romance</option>
+            <option value="Horror" style="background:#12121a;">Horror</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Year</label>
+          <input class="form-input" type="number" placeholder="2024" min="1900" max="2030" id="form-year" value="2024">
+        </div>
+      </div>
+
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Logline *</label>
+        <textarea class="form-input" placeholder="A compelling one-sentence summary of your story…" rows="3" required id="form-logline" style="resize:vertical; min-height:80px;"></textarea>
+      </div>
+
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Director / Creator</label>
+        <input class="form-input" type="text" placeholder="Your name or pseudonym" id="form-director">
+      </div>
+
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Poster Image URL</label>
+        <input class="form-input" type="url" placeholder="https://example.com/poster.jpg" id="form-image">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button type="button" class="btn-ghost" onclick="closeModal()" style="flex:1;">Cancel</button>
+        <button type="submit" class="btn-primary" style="flex:2;">
+          🎬 Submit Pitch
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- SUCCESS TOAST -->
+<div id="toast" style="position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#12121a; border:1px solid rgba(229,9,20,0.4); border-radius:12px; padding:14px 24px; display:flex; align-items:center; gap:10px; z-index:200; opacity:0; transition:all 0.3s ease; pointer-events:none; white-space:nowrap;">
+  <span style="font-size:18px;">🎬</span>
+  <span style="font-size:14px; font-weight:600;">Pitch submitted successfully!</span>
+</div>
+
+<script>
+// ─── MOVIE DATA ───────────────────────────────────────────────────────────────
+const movies = [
+  {
+    id: 1,
+    title: "Scarlet Dawn",
+    genre: "Action",
+    year: 2024,
+    likes: 1243,
+    rating: 5,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=400&q=75&auto=format&fit=crop",
+    logline: "An ex-soldier uncovers a corporate conspiracy that threatens to ignite World War III."
+  },
+  {
+    id: 2,
+    title: "The Last Monsoon",
+    genre: "Drama",
+    year: 2023,
+    likes: 987,
+    rating: 5,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=75&auto=format&fit=crop",
+    logline: "A family torn apart by ambition must reunite before a catastrophic storm destroys everything they know."
+  },
+  {
+    id: 3,
+    title: "Lagos Nights",
+    genre: "Nollywood",
+    year: 2024,
+    likes: 2105,
+    rating: 5,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=400&q=75&auto=format&fit=crop",
+    logline: "A rising musician navigates love, betrayal, and destiny in the pulsing heart of Lagos."
+  },
+  {
+    id: 4,
+    title: "Quantum Break",
+    genre: "Sci-Fi",
+    year: 2024,
+    likes: 1876,
+    rating: 4,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&q=75&auto=format&fit=crop",
+    logline: "A physicist discovers time is collapsing and must sacrifice everything to reset the universe."
+  },
+  {
+    id: 5,
+    title: "Paper Hearts",
+    genre: "Romance",
+    year: 2023,
+    likes: 734,
+    rating: 4,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75&auto=format&fit=crop",
+    logline: "Two rivals in a dying bookshop discover love letters from the 1940s that mirror their own story."
+  },
+  {
+    id: 6,
+    title: "Dead Signal",
+    genre: "Horror",
+    year: 2024,
+    likes: 1456,
+    rating: 4,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?w=400&q=75&auto=format&fit=crop",
+    logline: "A group of friends receive voicemails from their future selves — all warning of the same fate."
+  },
+  {
+    id: 7,
+    title: "Concrete Kings",
+    genre: "Drama",
+    year: 2023,
+    likes: 892,
+    rating: 4,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1502920917128-1aa500764b12?w=400&q=75&auto=format&fit=crop",
+    logline: "Five childhood friends from the projects must choose between loyalty and survival when one of them makes it big."
+  },
+  {
+    id: 8,
+    title: "The Perfect Heist",
+    genre: "Thriller",
+    year: 2024,
+    likes: 1621,
+    rating: 5,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=75&auto=format&fit=crop",
+    logline: "A master thief plans the impossible — stealing the world's most valuable secret from inside the UN."
+  },
+  {
+    id: 9,
+    title: "Dad's Cooking Again",
+    genre: "Comedy",
+    year: 2023,
+    likes: 543,
+    rating: 4,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&q=75&auto=format&fit=crop",
+    logline: "A widowed father attempts to win a reality cooking show with catastrophically disastrous results."
+  },
+  {
+    id: 10,
+    title: "Iron Meridian",
+    genre: "Action",
+    year: 2024,
+    likes: 1102,
+    rating: 4,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1559038555-d2a10979a0e8?w=400&q=75&auto=format&fit=crop",
+    logline: "A disgraced general must lead a ragtag army to defend the last free city on Earth."
+  },
+  {
+    id: 11,
+    title: "Abuja Royals",
+    genre: "Nollywood",
+    year: 2024,
+    likes: 1789,
+    rating: 5,
+    trending: true,
+    image: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&q=75&auto=format&fit=crop",
+    logline: "A royal family's ancient secret threatens to destroy the most powerful dynasty in West Africa."
+  },
+  {
+    id: 12,
+    title: "Echoes in the Dark",
+    genre: "Thriller",
+    year: 2023,
+    likes: 965,
+    rating: 4,
+    trending: false,
+    image: "https://images.unsplash.com/photo-1458501534264-7d326fa0ca04?w=400&q=75&auto=format&fit=crop",
+    logline: "A blind detective solves crimes using only sound — until a killer begins hunting her through silence."
+  }
+];
+
+// ─── STATE ─────────────────────────────────────────────────────────────────────
+let likedMovies = new Set();
+let currentFilter = 'All';
+let currentView = 'home';
+
+// ─── RENDER ────────────────────────────────────────────────────────────────────
+function renderMovies() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const grid = document.getElementById('movies-grid');
+  grid.innerHTML = '';
+
+  let filtered = movies;
+
+  if (currentView === 'trending') {
+    filtered = filtered.filter(m => m.trending);
+  }
+
+  if (currentFilter !== 'All') {
+    filtered = filtered.filter(m => m.genre === currentFilter);
+  }
+
+  if (query) {
+    filtered = filtered.filter(m =>
+      m.title.toLowerCase().includes(query) ||
+      m.genre.toLowerCase().includes(query) ||
+      (m.logline && m.logline.toLowerCase().includes(query))
+    );
+  }
+
+  document.getElementById('movie-count').textContent = filtered.length;
+
+  const noResults = document.getElementById('no-results');
+  if (filtered.length === 0) {
+    noResults.classList.remove('hidden');
+    return;
+  } else {
+    noResults.classList.add('hidden');
+  }
+
+  filtered.forEach((movie, index) => {
+    const card = createCard(movie, index);
+    grid.appendChild(card);
+  });
+}
+
+function createCard(movie, index) {
+  const card = document.createElement('div');
+  card.className = 'movie-card';
+  card.style.animationDelay = `${index * 50}ms`;
+
+  const liked = likedMovies.has(movie.id);
+  const stars = '★'.repeat(movie.rating) + '☆'.repeat(5 - movie.rating);
+  const likeCount = liked ? movie.likes + 1 : movie.likes;
+
+  card.innerHTML = `
+    ${movie.trending ? '<div class="trending-badge">🔥 Trending</div>' : ''}
+    <img src="${movie.image}" alt="${movie.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=60&auto=format&fit=crop'">
+    <div class="card-hover-overlay"></div>
+    <div class="card-overlay">
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px;">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+            <span class="genre-badge">${movie.genre}</span>
+            <span class="year-badge">${movie.year}</span>
+          </div>
+          <h3 style="font-size:14px; font-weight:700; line-height:1.3; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${movie.title}</h3>
+          <div class="rating" style="font-size:10px;">${stars}</div>
+        </div>
+        <button
+          class="like-btn ${liked ? 'liked' : ''}"
+          id="like-${movie.id}"
+          onclick="toggleLike(event, ${movie.id})"
+          aria-label="Like"
+        >
+          <svg width="12" height="12" fill="${liked ? '#e50914' : 'none'}" stroke="${liked ? '#e50914' : 'currentColor'}" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="count-${movie.id}">${formatCount(likeCount)}</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+// ─── LIKE TOGGLE ───────────────────────────────────────────────────────────────
+function toggleLike(event, id) {
+  event.stopPropagation();
+  const movie = movies.find(m => m.id === id);
+  if (!movie) return;
+
+  if (likedMovies.has(id)) {
+    likedMovies.delete(id);
+  } else {
+    likedMovies.add(id);
+  }
+
+  const btn = document.getElementById(`like-${id}`);
+  const count = document.getElementById(`count-${id}`);
+  const liked = likedMovies.has(id);
+
+  btn.classList.toggle('liked', liked);
+  count.textContent = formatCount(liked ? movie.likes + 1 : movie.likes);
+
+  const svg = btn.querySelector('svg');
+  svg.setAttribute('fill', liked ? '#e50914' : 'none');
+  svg.setAttribute('stroke', liked ? '#e50914' : 'currentColor');
+
+  // Pulse animation
+  btn.animate([
+    { transform: 'scale(1)' },
+    { transform: 'scale(1.3)' },
+    { transform: 'scale(1)' }
+  ], { duration: 250, easing: 'ease-out' });
+}
+
+function formatCount(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
+  return String(n);
+}
+
+// ─── FILTER ────────────────────────────────────────────────────────────────────
+function setFilter(btn, genre) {
+  currentFilter = genre;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMovies();
+}
+
+function filterMovies() {
+  renderMovies();
+}
+
+// ─── NAV ───────────────────────────────────────────────────────────────────────
+function setNav(view) {
+  currentView = view;
+  ['home', 'trending'].forEach(v => {
+    const el = document.getElementById(`nav-${v}`);
+    if (el) el.classList.toggle('active', v === view);
+    const bn = document.getElementById(`bn-${v}`);
+    if (bn) bn.style.color = v === view ? '#e50914' : '#9ca3af';
+  });
+
+  // Update hero for trending
+  if (view === 'trending') {
+    document.getElementById('hero-bg').style.backgroundImage =
+      "url('https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=1800&q=80&auto=format&fit=crop')";
+  } else {
+    document.getElementById('hero-bg').style.backgroundImage =
+      "url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80&auto=format&fit=crop')";
+  }
+
+  renderMovies();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnBackdrop(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ─── SUBMIT PITCH ──────────────────────────────────────────────────────────────
+function submitPitch(e) {
+  e.preventDefault();
+  const title = document.getElementById('form-title').value.trim();
+  const genre = document.getElementById('form-genre').value;
+  const year = parseInt(document.getElementById('form-year').value) || 2024;
+  const logline = document.getElementById('form-logline').value.trim();
+  const image = document.getElementById('form-image').value.trim() ||
+    'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=75&auto=format&fit=crop';
+
+  const newMovie = {
+    id: Date.now(),
+    title,
+    genre,
+    year,
+    likes: 0,
+    rating: 4,
+    trending: false,
+    image,
+    logline
+  };
+
+  movies.unshift(newMovie);
+  closeModal();
+  e.target.reset();
+
+  // Show toast
+  showToast('🎬 Pitch submitted successfully!');
+  renderMovies();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 3000);
+}
+
+// ─── RESPONSIVE BOTTOM NAV ─────────────────────────────────────────────────────
+function handleResize() {
+  const nav = document.getElementById('bottom-nav');
+  if (window.innerWidth < 768) {
+    nav.style.display = 'block';
+  } else {
+    nav.style.display = 'none';
+  }
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', handleResize);
+handleResize();
+renderMovies();
+</script>
+</body>
+</html>

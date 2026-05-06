@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "PitchFlix"
+version = "1.0.0"
+id = "artifacts/pitchflix"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24381
+
+[services.development]
+run = "pnpm --filter @workspace/pitchflix run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pitchflix", "run", "build" ]
+publicDir = "artifacts/pitchflix/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24381"
+BASE_PATH = "/"
