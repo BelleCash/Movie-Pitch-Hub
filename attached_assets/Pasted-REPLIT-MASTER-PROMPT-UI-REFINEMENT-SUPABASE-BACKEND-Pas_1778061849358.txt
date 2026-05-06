@@ -1,0 +1,157 @@
+REPLIT MASTER PROMPT (UI REFINEMENT + SUPABASE BACKEND)
+
+Paste this directly into Replit AI:
+
+🎬 PROJECT CONTEXT
+
+You are improving an existing Movie Pitch web app (website + app UI).
+
+The current UI works but looks basic.
+
+Your job is to refactor and upgrade the design to a premium, cinematic, portfolio-level UI, then connect it to a Supabase backend.
+
+⚠️ IMPORTANT:
+
+Do NOT drastically change structure
+Do NOT rebuild from scratch
+ONLY improve UI quality, UX, and connect real data
+🎨 PART 1 — UI REFINEMENT (PREMIUM / CINEMATIC)
+1. SPACING & LAYOUT
+Increase whitespace between sections
+Use consistent spacing system:
+px-6, py-10, max-w-7xl, mx-auto
+Improve alignment and visual balance across all sections
+2. CARD DESIGN IMPROVEMENT
+Add strong gradient overlays on images (dark cinematic feel)
+Improve typography hierarchy:
+Larger, bold titles
+Smaller, muted genre text
+Add:
+hover:scale-105
+soft glow effect on hover
+smooth transitions (transition-all duration-300)
+Use rounded corners: rounded-2xl
+3. NAVBAR (GLASSMORPHISM)
+Make navbar sticky
+Add:
+backdrop-blur
+semi-transparent background
+subtle shadow on scroll
+Keep it clean and minimal
+4. HERO SECTION
+Add dark gradient overlay on background image
+Improve text contrast and readability
+Add CTA button:
+hover animation
+slight scale + glow
+5. ANIMATIONS
+Add:
+fade-in on page load
+smooth transitions (300ms)
+Apply hover effects across:
+buttons
+cards
+navigation elements
+6. MOBILE UX
+Improve spacing on small screens
+Make cards slightly larger and easier to tap
+Optional:
+add bottom navigation bar for mobile
+7. VISUAL POLISH
+Use consistent:
+rounded-2xl
+shadow depth (shadow-lg, shadow-xl)
+Maintain clean, modern spacing system
+Ensure polished, portfolio-level finish
+⚙️ PART 2 — SUPABASE BACKEND (REAL DATA)
+GOAL:
+
+Replace all mock data with real database data using Supabase
+
+1. SETUP
+
+Use Supabase client via CDN:
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+2. INITIALIZE
+const supabaseUrl = "YOUR_URL";
+const supabaseKey = "YOUR_ANON_KEY";
+
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+3. DATABASE TABLE
+
+Use this schema:
+
+create table pitches (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  genre text,
+  image text,
+  likes integer default 0,
+  created_at timestamp default now()
+);
+4. FETCH DATA (Replace Mock Data)
+async function loadPitches() {
+  const { data, error } = await supabase
+    .from('pitches')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  renderPitches(data);
+}
+5. ADD NEW PITCH
+async function addPitch(pitch) {
+  const { error } = await supabase
+    .from('pitches')
+    .insert([pitch]);
+
+  if (!error) loadPitches();
+}
+6. LIKE SYSTEM (REAL DATABASE)
+async function likePitch(id, currentLikes) {
+  await supabase
+    .from('pitches')
+    .update({ likes: currentLikes + 1 })
+    .eq('id', id);
+
+  loadPitches();
+}
+⚠️ CONSTRAINTS (VERY IMPORTANT)
+
+Do NOT implement:
+
+Authentication
+Image uploads
+Comments system
+
+Focus ONLY on:
+✅ Clean premium UI
+✅ Functional database integration
+✅ Smooth UX
+
+🧠 EXPECTED RESULT
+
+By the end:
+
+UI looks cinematic and portfolio-level
+Data is fully dynamic from Supabase
+App works end-to-end (real product feel)
+🚀 EXECUTION ORDER
+Refactor and upgrade UI
+Connect Supabase
+Replace mock data
+Ensure everything renders correctly
+⚡ FINAL INSTRUCTION
+
+Keep code:
+
+Clean
+Modular
+Readable
+
+Avoid unnecessary complexity.

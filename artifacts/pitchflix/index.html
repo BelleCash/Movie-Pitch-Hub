@@ -7,8 +7,9 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,300;1,14..32,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -17,838 +18,745 @@
             bg: '#0b0b0f',
             card: '#12121a',
             accent: '#e50914',
-            'accent-dark': '#b0070f',
             muted: '#9ca3af',
             surface: '#1a1a26',
-            'surface-2': '#22223a',
           },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.6s ease-out forwards',
-            'fade-up': 'fadeUp 0.5s ease-out forwards',
-            'slide-down': 'slideDown 0.3s ease-out',
-            'scale-in': 'scaleIn 0.2s ease-out',
-          },
-          keyframes: {
-            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
-            fadeUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-            slideDown: { from: { opacity: '0', transform: 'translateY(-10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
-            scaleIn: { from: { opacity: '0', transform: 'scale(0.95)' }, to: { opacity: '1', transform: 'scale(1)' } },
-          },
-          backdropBlur: { xs: '2px' },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
         }
       }
     }
   </script>
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
     html, body {
       background-color: #0b0b0f;
-      color: #ffffff;
+      color: #fff;
       font-family: 'Inter', sans-serif;
       -webkit-font-smoothing: antialiased;
+      min-height: 100%;
     }
-
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: #12121a; }
     ::-webkit-scrollbar-thumb { background: #e50914; border-radius: 4px; }
 
-    /* Glassmorphism navbar */
+    /* ── NAVBAR ── */
     .glass-nav {
-      background: rgba(11, 11, 15, 0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(11,11,15,0.72);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: background 0.3s;
     }
+    .glass-nav.scrolled { background: rgba(11,11,15,0.92); }
 
-    /* Movie card */
-    .movie-card {
-      background: #12121a;
-      border-radius: 16px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-      position: relative;
-    }
-    .movie-card:hover {
-      transform: scale(1.04) translateY(-4px);
-      box-shadow: 0 20px 60px rgba(229, 9, 20, 0.25), 0 8px 32px rgba(0,0,0,0.6);
-    }
-    .movie-card img {
-      width: 100%;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      display: block;
-      transition: opacity 0.3s;
-    }
-    .card-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(11,11,15,0.97) 0%, rgba(11,11,15,0.5) 45%, rgba(11,11,15,0) 70%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 16px;
-    }
-    .card-hover-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(229,9,20,0.08) 0%, rgba(0,0,0,0) 60%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      border-radius: 16px;
-      border: 1px solid transparent;
-    }
-    .movie-card:hover .card-hover-overlay {
-      opacity: 1;
-      border-color: rgba(229,9,20,0.25);
-    }
-
-    /* Like button */
-    .like-btn {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 50px;
-      padding: 4px 10px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(8px);
-      color: #ffffff;
-    }
-    .like-btn:hover { background: rgba(229,9,20,0.25); border-color: rgba(229,9,20,0.4); }
-    .like-btn.liked { background: rgba(229,9,20,0.3); border-color: #e50914; color: #e50914; }
-    .like-btn.liked svg { fill: #e50914; stroke: #e50914; }
-    .like-btn svg { transition: transform 0.2s; }
-    .like-btn:hover svg { transform: scale(1.2); }
-
-    /* Filter buttons */
-    .filter-btn {
-      padding: 8px 20px;
-      border-radius: 50px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.05);
-      color: #9ca3af;
-      font-size: 13px;
-      font-weight: 500;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .filter-btn:hover { border-color: rgba(229,9,20,0.5); color: #ffffff; background: rgba(229,9,20,0.1); }
-    .filter-btn.active { background: #e50914; border-color: #e50914; color: #ffffff; font-weight: 600; }
-
-    /* Hero */
+    /* ── HERO ── */
     .hero-section {
       position: relative;
-      height: 85vh;
-      min-height: 500px;
+      min-height: 88vh;
       overflow: hidden;
     }
     .hero-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center top;
-      transition: opacity 0.8s ease;
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 20%;
+      transform: scale(1.04);
+      transition: background-image 0.8s ease, opacity 0.5s;
     }
     .hero-gradient {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to right,
-        rgba(11,11,15,0.92) 0%,
-        rgba(11,11,15,0.65) 40%,
-        rgba(11,11,15,0.15) 70%,
-        rgba(11,11,15,0) 100%
-      ),
-      linear-gradient(
-        to top,
-        rgba(11,11,15,1) 0%,
-        rgba(11,11,15,0.4) 30%,
-        rgba(11,11,15,0) 60%
-      );
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to right, rgba(11,11,15,0.96) 0%, rgba(11,11,15,0.7) 40%, rgba(11,11,15,0.1) 80%),
+        linear-gradient(to top, rgba(11,11,15,1) 0%, rgba(11,11,15,0.45) 28%, transparent 55%);
     }
     .hero-content {
+      position: relative; z-index: 2;
+      height: 100%; min-height: 88vh;
+      display: flex; align-items: flex-end;
+      padding: 0 6% 100px;
+    }
+
+    /* ── MOVIE CARDS ── */
+    .movie-card {
+      background: #12121a;
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
       position: relative;
-      z-index: 2;
-      height: 100%;
-      display: flex;
-      align-items: flex-end;
-      padding: 0 6% 80px;
-    }
-
-    /* Search bar */
-    .search-input {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 50px;
-      padding: 10px 20px 10px 44px;
-      color: #ffffff;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.2s;
-      width: 220px;
-    }
-    .search-input:focus { border-color: rgba(229,9,20,0.5); background: rgba(255,255,255,0.1); width: 280px; }
-    .search-input::placeholder { color: #9ca3af; }
-
-    /* Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      transform: translateY(0) scale(1);
+      transition: transform 0.32s cubic-bezier(.34,1.46,.64,1), box-shadow 0.32s ease, border-color 0.32s;
+      border: 1px solid rgba(255,255,255,0.04);
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
+      animation: fadeUp 0.45s ease-out forwards;
+    }
+    .movie-card:hover {
+      transform: translateY(-6px) scale(1.035);
+      box-shadow: 0 28px 64px rgba(229,9,20,0.22), 0 8px 24px rgba(0,0,0,0.7);
+      border-color: rgba(229,9,20,0.2);
+    }
+    .movie-card img {
+      width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block;
+      transition: transform 0.5s ease;
+    }
+    .movie-card:hover img { transform: scale(1.06); }
+
+    .card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(11,11,15,0.98) 0%, rgba(11,11,15,0.55) 42%, rgba(11,11,15,0.0) 68%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 14px 13px;
+    }
+    .card-shine {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(229,9,20,0.07) 0%, transparent 55%);
+      border-radius: 18px;
+      opacity: 0; transition: opacity 0.3s;
+      border: 1px solid transparent;
+    }
+    .movie-card:hover .card-shine { opacity: 1; border-color: rgba(229,9,20,0.18); }
+
+    /* ── LIKE BUTTON ── */
+    .like-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.13);
+      backdrop-filter: blur(8px);
+      border-radius: 50px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600; color: #d1d5db;
+      cursor: pointer; transition: all 0.22s ease;
+      white-space: nowrap;
+    }
+    .like-btn:hover { background: rgba(229,9,20,0.22); border-color: rgba(229,9,20,0.38); color: #fff; }
+    .like-btn.liked { background: rgba(229,9,20,0.28); border-color: #e50914; color: #e50914; }
+    .like-btn svg { transition: transform 0.22s; }
+    .like-btn:hover svg, .like-btn.liked svg { transform: scale(1.25); }
+
+    /* ── FILTER CHIPS ── */
+    .filter-btn {
+      padding: 8px 22px; border-radius: 50px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: #9ca3af; font-size: 13px; font-weight: 500;
+      white-space: nowrap; cursor: pointer;
+      transition: all 0.22s ease;
+      user-select: none;
+    }
+    .filter-btn:hover { border-color: rgba(229,9,20,0.45); color: #fff; background: rgba(229,9,20,0.09); }
+    .filter-btn.active { background: #e50914; border-color: #e50914; color: #fff; font-weight: 700; }
+
+    /* ── BUTTONS ── */
+    .btn-red {
+      background: #e50914; color: #fff;
+      border: none; border-radius: 10px;
+      padding: 13px 30px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 22px rgba(229,9,20,0.32);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-red:hover { background: #c5070f; box-shadow: 0 6px 32px rgba(229,9,20,0.52); transform: translateY(-1px); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06); color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 13px 26px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
+
+    /* ── SEARCH ── */
+    .search-wrap { position: relative; display: flex; align-items: center; }
+    .search-wrap svg { position: absolute; left: 14px; pointer-events: none; color: #6b7280; }
+    .search-input {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50px; padding: 9px 18px 9px 42px;
+      color: #fff; font-size: 14px; outline: none;
+      width: 200px; transition: all 0.25s; font-family: inherit;
+    }
+    .search-input:focus { border-color: rgba(229,9,20,0.5); background: rgba(255,255,255,0.09); width: 260px; }
+    .search-input::placeholder { color: #6b7280; }
+
+    /* ── MODAL ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+      opacity: 0; pointer-events: none; transition: opacity 0.28s;
     }
     .modal-backdrop.open { opacity: 1; pointer-events: all; }
     .modal-box {
-      background: #12121a;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 36px;
-      width: 100%;
-      max-width: 480px;
-      transform: scale(0.95) translateY(10px);
-      transition: transform 0.25s ease;
-      max-height: 90vh;
-      overflow-y: auto;
+      background: #14141e; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px; padding: 36px; width: 100%; max-width: 490px;
+      transform: scale(0.94) translateY(12px); transition: transform 0.28s cubic-bezier(.34,1.4,.64,1);
+      max-height: 90vh; overflow-y: auto;
     }
     .modal-backdrop.open .modal-box { transform: scale(1) translateY(0); }
 
-    /* Form inputs */
+    /* ── FORM ── */
+    .form-label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
     .form-input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: #ffffff;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      font-family: 'Inter', sans-serif;
+      width: 100%; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09); border-radius: 10px;
+      padding: 12px 15px; color: #fff; font-size: 14px; outline: none;
+      transition: border-color 0.2s; font-family: inherit;
     }
-    .form-input:focus { border-color: #e50914; }
-    .form-input::placeholder { color: #6b7280; }
+    .form-input:focus { border-color: #e50914; background: rgba(255,255,255,0.07); }
+    .form-input::placeholder { color: #4b5563; }
 
-    /* Genre badge */
+    /* ── BADGES ── */
     .genre-badge {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: rgba(229,9,20,0.2);
-      color: #f87171;
-      border: 1px solid rgba(229,9,20,0.25);
+      font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 5px;
+      background: rgba(229,9,20,0.18); color: #f87171;
+      border: 1px solid rgba(229,9,20,0.22);
     }
+    .year-badge {
+      font-size: 10px; color: #6b7280;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px; padding: 2px 6px;
+    }
+    .trending-badge {
+      position: absolute; top: 11px; left: 11px; z-index: 3;
+      background: linear-gradient(135deg, #e50914, #ff3b3b);
+      color: #fff; font-size: 8px; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(229,9,20,0.45);
+    }
+    .stars { color: #f59e0b; font-size: 10px; letter-spacing: 0.5px; }
 
-    /* Card stagger */
-    .movie-card { opacity: 0; animation: fadeUp 0.4s ease-out forwards; }
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, #1a1a26 25%, #22223a 50%, #1a1a26 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 18px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
 
-    /* Bottom nav */
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+    /* ── BOTTOM NAV ── */
     .bottom-nav {
       background: rgba(11,11,15,0.95);
       backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255,255,255,0.06);
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
+    .bn-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: #6b7280; cursor: pointer; padding: 0 14px; transition: color 0.2s; font-family: inherit; }
+    .bn-btn.active { color: #e50914; }
+    .bn-btn svg { transition: transform 0.2s; }
+    .bn-btn:hover svg { transform: scale(1.15); }
 
-    /* Rating stars */
-    .rating { color: #f59e0b; font-size: 11px; letter-spacing: 1px; }
+    /* ── NAV LINKS ── */
+    .nav-link { color: #9ca3af; font-size: 14px; font-weight: 500; cursor: pointer; transition: color 0.2s; padding-bottom: 2px; border-bottom: 2px solid transparent; }
+    .nav-link:hover, .nav-link.active { color: #fff; }
+    .nav-link.active { border-color: #e50914; }
 
-    /* Scrollbar hidden for filter */
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(12px);
+      background: #14141e; border: 1px solid rgba(229,9,20,0.35); border-radius: 14px;
+      padding: 13px 24px; display: flex; align-items: center; gap: 10px;
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      white-space: nowrap; font-size: 14px; font-weight: 600;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── DB STATUS ── */
+    .db-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 11px; border-radius: 50px;
+    }
+    .db-chip.live { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .db-chip.demo { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+
+    /* ── FILTER SCROLL ── */
     .filter-scroll { scrollbar-width: none; -ms-overflow-style: none; }
     .filter-scroll::-webkit-scrollbar { display: none; }
 
-    /* Gradient text */
-    .gradient-text {
-      background: linear-gradient(135deg, #ffffff 0%, #e50914 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* Red glow button */
-    .btn-primary {
-      background: #e50914;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 28px;
-      color: white;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 20px rgba(229,9,20,0.3);
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-primary:hover { background: #b0070f; box-shadow: 0 6px 28px rgba(229,9,20,0.5); transform: translateY(-1px); }
-
-    .btn-ghost {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
-      padding: 12px 24px;
-      color: white;
-      font-weight: 500;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-ghost:hover { background: rgba(255,255,255,0.12); }
-
-    /* Hidden utility */
+    /* ── UTILITIES ── */
     .hidden { display: none !important; }
 
-    /* Nav link */
-    .nav-link {
-      color: #9ca3af;
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.2s;
-      cursor: pointer;
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .hero-content { padding: 0 5% 80px; }
+      .desktop-only { display: none !important; }
     }
-    .nav-link:hover, .nav-link.active { color: #ffffff; }
-    .nav-link.active { border-bottom: 2px solid #e50914; padding-bottom: 2px; }
-
-    /* Trending badge */
-    .trending-badge {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: linear-gradient(135deg, #e50914, #ff4444);
-      color: white;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 4px;
-      z-index: 3;
-    }
-
-    /* Year badge */
-    .year-badge {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 4px;
-      font-size: 11px;
-      padding: 2px 6px;
-      color: #9ca3af;
+    @media (min-width: 641px) {
+      .mobile-only { display: none !important; }
+      #bottom-nav { display: none !important; }
     }
   </style>
 </head>
 <body>
 
-<!-- STICKY NAVBAR -->
-<nav class="glass-nav fixed top-0 left-0 right-0 z-50">
-  <div style="max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; justify-content:space-between; height:64px;">
-    <!-- Logo -->
-    <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="scrollToTop()">
-      <div style="width:32px; height:32px; background:#e50914; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;">🎬</div>
-      <span style="font-size:20px; font-weight:800; letter-spacing:-0.03em;">Pitch<span style="color:#e50914;">Flix</span></span>
+<!-- ───────────────────── NAVBAR ───────────────────── -->
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50" id="navbar">
+  <div style="max-width:1380px; margin:0 auto; padding:0 28px; display:flex; align-items:center; justify-content:space-between; height:66px;">
+
+    <div style="display:flex; align-items:center; gap:9px; cursor:pointer;" onclick="scrollToTop()">
+      <div style="width:33px; height:33px; background:#e50914; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;">🎬</div>
+      <span style="font-size:21px; font-weight:900; letter-spacing:-0.04em;">Pitch<span style="color:#e50914;">Flix</span></span>
     </div>
 
-    <!-- Nav links (desktop) -->
-    <div class="nav-links" style="display:flex; align-items:center; gap:32px;">
-      <span class="nav-link active" id="nav-home" onclick="setNav('home')">Home</span>
-      <span class="nav-link" id="nav-trending" onclick="setNav('trending')">Trending</span>
-      <span class="nav-link" id="nav-submit" onclick="openModal()">Submit</span>
+    <div class="desktop-only" style="display:flex; align-items:center; gap:34px;">
+      <span class="nav-link active" id="nav-home" onclick="setView('home')">Home</span>
+      <span class="nav-link" id="nav-trending" onclick="setView('trending')">Trending</span>
+      <span class="nav-link" onclick="openModal()">Submit</span>
     </div>
 
-    <!-- Right: search + submit -->
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div style="position:relative; display:flex; align-items:center;">
-        <svg style="position:absolute; left:14px; color:#9ca3af; pointer-events:none;" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input class="search-input" type="search" id="search-input" placeholder="Search pitches…" oninput="filterMovies()">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="db-chip" id="db-chip" style="display:none;"></div>
+      <div class="search-wrap desktop-only">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-input" id="search-input" type="search" placeholder="Search pitches…" oninput="renderMovies()">
       </div>
-      <button class="btn-primary" onclick="openModal()" style="padding:10px 18px; border-radius:8px; font-size:13px;">
+      <button class="btn-red desktop-only" onclick="openModal()" style="padding:9px 18px; border-radius:9px; font-size:13px;">
         + Submit Pitch
       </button>
     </div>
   </div>
 </nav>
 
-<!-- HERO SECTION -->
+<!-- ───────────────────── HERO ───────────────────── -->
 <section class="hero-section" id="hero">
-  <div class="hero-bg" id="hero-bg" style="background-image: url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80&auto=format&fit=crop');"></div>
+  <div class="hero-bg" id="hero-bg" style="background-image:url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80&auto=format&fit=crop');"></div>
   <div class="hero-gradient"></div>
-  <div class="hero-content animate-fade-in" style="padding-top:64px;">
-    <div style="max-width:520px;">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-        <span style="background:rgba(229,9,20,0.2); color:#f87171; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 12px; border-radius:4px; border:1px solid rgba(229,9,20,0.3);">Featured Pitch</span>
-        <span class="rating">★★★★★</span>
-        <span style="color:#9ca3af; font-size:13px;">2024</span>
+  <div class="hero-content" style="padding-top:66px;">
+    <div style="max-width:540px; animation:fadeIn 0.8s ease-out both;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
+        <span style="background:rgba(229,9,20,0.18); color:#f87171; font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; padding:4px 12px; border-radius:5px; border:1px solid rgba(229,9,20,0.28);">Featured Pitch</span>
+        <span class="stars">★★★★★</span>
+        <span style="color:#6b7280; font-size:13px;">2024</span>
       </div>
-      <h1 style="font-size:clamp(2rem,5vw,3.5rem); font-weight:900; line-height:1.05; letter-spacing:-0.03em; margin-bottom:16px;">
+      <h1 style="font-size:clamp(2.1rem,5vw,3.8rem); font-weight:900; line-height:1.04; letter-spacing:-0.04em; margin-bottom:18px;">
         Beyond the <span style="color:#e50914;">Horizon</span>
       </h1>
-      <p style="font-size:15px; color:#d1d5db; line-height:1.7; margin-bottom:28px; max-width:420px;">
-        A gripping sci-fi epic about the last generation of Earth's survivors who must terraform a dying planet before time runs out. A story of sacrifice, humanity, and hope among the stars.
+      <p style="font-size:15px; line-height:1.75; color:#c9ced6; margin-bottom:30px; max-width:430px;">
+        A gripping sci-fi epic about the last generation of Earth's survivors who must terraform a dying planet before time runs out — a story of sacrifice, humanity, and hope among the stars.
       </p>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        <button class="btn-primary" style="display:flex; align-items:center; gap:8px;">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:28px;">
+        <button class="btn-red">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           Watch Pitch
         </button>
-        <button class="btn-ghost" style="display:flex; align-items:center; gap:8px;">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <button class="btn-ghost">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           More Info
         </button>
       </div>
-      <div style="display:flex; align-items:center; gap:20px; margin-top:24px;">
-        <div style="display:flex; align-items:center; gap:6px; color:#9ca3af; font-size:13px;">
-          <svg width="14" height="14" fill="none" stroke="#e50914" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span id="hero-likes">2,847 likes</span>
+      <div style="display:flex; align-items:center; gap:22px; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:7px; color:#9ca3af; font-size:13px;">
+          <svg width="14" height="14" fill="#e50914" stroke="#e50914" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          2,847 likes
         </div>
-        <div style="color:#9ca3af; font-size:13px;">Sci-Fi · Action · Drama</div>
+        <div style="color:#6b7280; font-size:13px; display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-block; width:3px; height:3px; border-radius:50%; background:#4b5563;"></span>
+          Sci-Fi · Action · Drama
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- MAIN CONTENT -->
-<main style="max-width:1400px; margin:0 auto; padding:0 24px 120px;">
+<!-- ───────────────────── MAIN ───────────────────── -->
+<main style="max-width:1380px; margin:0 auto; padding:0 28px 130px;">
 
-  <!-- SECTION HEADER + FILTER BAR -->
-  <div style="padding:40px 0 28px;">
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:20px; margin-bottom:24px;">
+  <!-- SECTION HEADER -->
+  <div style="padding:44px 0 20px;">
+    <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
       <div>
-        <h2 style="font-size:22px; font-weight:800; letter-spacing:-0.02em;">All Pitches</h2>
-        <p style="color:#9ca3af; font-size:13px; margin-top:4px;"><span id="movie-count">12</span> pitches available</p>
+        <h2 id="section-title" style="font-size:24px; font-weight:800; letter-spacing:-0.025em;">All Pitches</h2>
+        <p style="color:#6b7280; font-size:13px; margin-top:5px;"><span id="movie-count">—</span> pitches available</p>
       </div>
-      <div style="display:flex; align-items:center; gap:8px; color:#9ca3af; font-size:13px;">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Sort: Recent
+      <div style="display:flex; align-items:center; gap:8px;">
+        <!-- Mobile search -->
+        <div class="search-wrap mobile-only">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input class="search-input" id="search-input-mobile" type="search" placeholder="Search…" oninput="renderMovies()">
+        </div>
       </div>
     </div>
 
-    <!-- Filter scroll -->
+    <!-- FILTER BAR -->
     <div class="filter-scroll" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
-      <button class="filter-btn active" data-genre="All" onclick="setFilter(this, 'All')">All</button>
-      <button class="filter-btn" data-genre="Action" onclick="setFilter(this, 'Action')">Action</button>
-      <button class="filter-btn" data-genre="Drama" onclick="setFilter(this, 'Drama')">Drama</button>
-      <button class="filter-btn" data-genre="Comedy" onclick="setFilter(this, 'Comedy')">Comedy</button>
-      <button class="filter-btn" data-genre="Nollywood" onclick="setFilter(this, 'Nollywood')">Nollywood</button>
-      <button class="filter-btn" data-genre="Sci-Fi" onclick="setFilter(this, 'Sci-Fi')">Sci-Fi</button>
-      <button class="filter-btn" data-genre="Thriller" onclick="setFilter(this, 'Thriller')">Thriller</button>
-      <button class="filter-btn" data-genre="Romance" onclick="setFilter(this, 'Romance')">Romance</button>
-      <button class="filter-btn" data-genre="Horror" onclick="setFilter(this, 'Horror')">Horror</button>
+      <button class="filter-btn active" data-genre="All" onclick="setFilter(this,'All')">All</button>
+      <button class="filter-btn" data-genre="Action" onclick="setFilter(this,'Action')">Action</button>
+      <button class="filter-btn" data-genre="Drama" onclick="setFilter(this,'Drama')">Drama</button>
+      <button class="filter-btn" data-genre="Comedy" onclick="setFilter(this,'Comedy')">Comedy</button>
+      <button class="filter-btn" data-genre="Nollywood" onclick="setFilter(this,'Nollywood')">Nollywood</button>
+      <button class="filter-btn" data-genre="Sci-Fi" onclick="setFilter(this,'Sci-Fi')">Sci-Fi</button>
+      <button class="filter-btn" data-genre="Thriller" onclick="setFilter(this,'Thriller')">Thriller</button>
+      <button class="filter-btn" data-genre="Romance" onclick="setFilter(this,'Romance')">Romance</button>
+      <button class="filter-btn" data-genre="Horror" onclick="setFilter(this,'Horror')">Horror</button>
     </div>
   </div>
 
-  <!-- No results message -->
-  <div id="no-results" class="hidden" style="text-align:center; padding:80px 20px;">
-    <div style="font-size:48px; margin-bottom:16px;">🎬</div>
-    <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">No pitches found</h3>
-    <p style="color:#9ca3af; font-size:14px;">Try a different filter or search term.</p>
+  <!-- LOADING SKELETONS -->
+  <div id="skeletons" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:20px;">
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
+    <div class="skeleton" style="aspect-ratio:2/3;"></div>
   </div>
 
-  <!-- GALLERY GRID -->
-  <div id="movies-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:20px;">
-    <!-- Cards injected by JS -->
+  <!-- NO RESULTS -->
+  <div id="no-results" class="hidden" style="text-align:center; padding:80px 20px; color:#6b7280;">
+    <div style="font-size:52px; margin-bottom:18px;">🎬</div>
+    <h3 style="font-size:19px; font-weight:700; color:#fff; margin-bottom:8px;">No pitches found</h3>
+    <p style="font-size:14px;">Try a different filter or search term.</p>
   </div>
+
+  <!-- GRID -->
+  <div id="movies-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:20px; display:none;"></div>
 
 </main>
 
-<!-- BOTTOM NAV (mobile) -->
-<div class="bottom-nav" style="position:fixed; bottom:0; left:0; right:0; z-index:50; display:none;" id="bottom-nav">
-  <div style="display:flex; align-items:center; justify-content:space-around; padding:12px 0; padding-bottom:calc(12px + env(safe-area-inset-bottom));">
-    <button onclick="setNav('home')" style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-home">
+<!-- ───────────────────── BOTTOM NAV (mobile) ───────────────────── -->
+<nav id="bottom-nav" class="bottom-nav mobile-only" style="position:fixed; bottom:0; left:0; right:0; z-index:50;">
+  <div style="display:flex; align-items:center; justify-content:space-around; padding:12px 0; padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px));">
+    <button class="bn-btn active" id="bn-home" onclick="setView('home')">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Home
     </button>
-    <button onclick="setNav('trending')" style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-trending">
+    <button class="bn-btn" id="bn-trending" onclick="setView('trending')">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
       Trending
     </button>
-    <button onclick="openModal()" style="background:#e50914; border:none; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; cursor:pointer; box-shadow:0 4px 20px rgba(229,9,20,0.4); margin-bottom:4px;">
+    <button onclick="openModal()" style="background:#e50914; border:none; width:52px; height:52px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 20px rgba(229,9,20,0.42); margin-bottom:4px; flex-shrink:0; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
-    <button style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;" id="bn-search" onclick="document.getElementById('search-input').focus()">
+    <button class="bn-btn" onclick="document.getElementById('search-input-mobile').focus(); document.getElementById('search-input-mobile').scrollIntoView({behavior:'smooth'});">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       Search
     </button>
-    <button style="background:none; border:none; color:#9ca3af; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:10px; font-weight:500; cursor:pointer;">
+    <button class="bn-btn">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Profile
     </button>
   </div>
-</div>
+</nav>
 
-<!-- SUBMIT PITCH MODAL -->
-<div class="modal-backdrop" id="modal" onclick="closeModalOnBackdrop(event)">
+<!-- ───────────────────── SUBMIT MODAL ───────────────────── -->
+<div class="modal-backdrop" id="modal" onclick="onBackdropClick(event)">
   <div class="modal-box" id="modal-box">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:28px;">
       <div>
-        <h2 style="font-size:20px; font-weight:800; letter-spacing:-0.02em;">Submit Your Pitch</h2>
-        <p style="color:#9ca3af; font-size:13px; margin-top:4px;">Share your story with the world</p>
+        <h2 style="font-size:21px; font-weight:800; letter-spacing:-0.025em;">Submit Your Pitch</h2>
+        <p style="color:#6b7280; font-size:13px; margin-top:5px;">Share your story with the world</p>
       </div>
-      <button onclick="closeModal()" style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9ca3af; transition:all 0.2s; font-size:18px;" onmouseover="this.style.background='rgba(229,9,20,0.2)';this.style.color='white';" onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='#9ca3af';">×</button>
+      <button onclick="closeModal()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:50%; width:36px; height:36px; min-width:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9ca3af; font-size:18px; line-height:1; transition:all 0.2s;" onmouseover="this.style.background='rgba(229,9,20,0.2)'; this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.06)'; this.style.color='#9ca3af'">×</button>
     </div>
-
-    <form onsubmit="submitPitch(event)" style="display:flex; flex-direction:column; gap:16px;">
+    <form id="pitch-form" onsubmit="handleSubmit(event)" style="display:flex; flex-direction:column; gap:16px;">
       <div>
-        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Movie Title *</label>
-        <input class="form-input" type="text" placeholder="Enter your pitch title…" required id="form-title">
+        <label class="form-label">Movie Title *</label>
+        <input class="form-input" id="f-title" type="text" placeholder="Enter your pitch title…" required>
       </div>
-
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div>
-          <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Genre *</label>
-          <select class="form-input" required id="form-genre" style="cursor:pointer;">
-            <option value="" disabled selected style="background:#12121a;">Select genre…</option>
-            <option value="Action" style="background:#12121a;">Action</option>
-            <option value="Drama" style="background:#12121a;">Drama</option>
-            <option value="Comedy" style="background:#12121a;">Comedy</option>
-            <option value="Nollywood" style="background:#12121a;">Nollywood</option>
-            <option value="Sci-Fi" style="background:#12121a;">Sci-Fi</option>
-            <option value="Thriller" style="background:#12121a;">Thriller</option>
-            <option value="Romance" style="background:#12121a;">Romance</option>
-            <option value="Horror" style="background:#12121a;">Horror</option>
+          <label class="form-label">Genre *</label>
+          <select class="form-input" id="f-genre" required style="cursor:pointer; appearance:auto;">
+            <option value="" disabled selected>Select…</option>
+            <option>Action</option><option>Drama</option><option>Comedy</option>
+            <option>Nollywood</option><option>Sci-Fi</option><option>Thriller</option>
+            <option>Romance</option><option>Horror</option>
           </select>
         </div>
         <div>
-          <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Year</label>
-          <input class="form-input" type="number" placeholder="2024" min="1900" max="2030" id="form-year" value="2024">
+          <label class="form-label">Year</label>
+          <input class="form-input" id="f-year" type="number" placeholder="2024" min="1900" max="2030" value="2024">
         </div>
       </div>
-
       <div>
-        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Logline *</label>
-        <textarea class="form-input" placeholder="A compelling one-sentence summary of your story…" rows="3" required id="form-logline" style="resize:vertical; min-height:80px;"></textarea>
+        <label class="form-label">Logline *</label>
+        <textarea class="form-input" id="f-logline" placeholder="A compelling one-sentence summary of your story…" rows="3" required style="resize:vertical; min-height:78px;"></textarea>
       </div>
-
       <div>
-        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Director / Creator</label>
-        <input class="form-input" type="text" placeholder="Your name or pseudonym" id="form-director">
+        <label class="form-label">Director / Creator</label>
+        <input class="form-input" id="f-director" type="text" placeholder="Your name or pseudonym">
       </div>
-
       <div>
-        <label style="display:block; font-size:12px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Poster Image URL</label>
-        <input class="form-input" type="url" placeholder="https://example.com/poster.jpg" id="form-image">
+        <label class="form-label">Poster Image URL</label>
+        <input class="form-input" id="f-image" type="url" placeholder="https://…">
       </div>
-
-      <div style="display:flex; gap:10px; margin-top:8px;">
+      <div style="display:flex; gap:10px; margin-top:6px;">
         <button type="button" class="btn-ghost" onclick="closeModal()" style="flex:1;">Cancel</button>
-        <button type="submit" class="btn-primary" style="flex:2;">
-          🎬 Submit Pitch
-        </button>
+        <button type="submit" class="btn-red" style="flex:2; justify-content:center;" id="submit-btn">🎬 Submit Pitch</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- SUCCESS TOAST -->
-<div id="toast" style="position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px); background:#12121a; border:1px solid rgba(229,9,20,0.4); border-radius:12px; padding:14px 24px; display:flex; align-items:center; gap:10px; z-index:200; opacity:0; transition:all 0.3s ease; pointer-events:none; white-space:nowrap;">
-  <span style="font-size:18px;">🎬</span>
-  <span style="font-size:14px; font-weight:600;">Pitch submitted successfully!</span>
+<!-- ───────────────────── TOAST ───────────────────── -->
+<div id="toast">
+  <span>🎬</span>
+  <span id="toast-msg">Pitch submitted!</span>
 </div>
 
 <script>
-// ─── MOVIE DATA ───────────────────────────────────────────────────────────────
-const movies = [
-  {
-    id: 1,
-    title: "Scarlet Dawn",
-    genre: "Action",
-    year: 2024,
-    likes: 1243,
-    rating: 5,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=400&q=75&auto=format&fit=crop",
-    logline: "An ex-soldier uncovers a corporate conspiracy that threatens to ignite World War III."
-  },
-  {
-    id: 2,
-    title: "The Last Monsoon",
-    genre: "Drama",
-    year: 2023,
-    likes: 987,
-    rating: 5,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=75&auto=format&fit=crop",
-    logline: "A family torn apart by ambition must reunite before a catastrophic storm destroys everything they know."
-  },
-  {
-    id: 3,
-    title: "Lagos Nights",
-    genre: "Nollywood",
-    year: 2024,
-    likes: 2105,
-    rating: 5,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=400&q=75&auto=format&fit=crop",
-    logline: "A rising musician navigates love, betrayal, and destiny in the pulsing heart of Lagos."
-  },
-  {
-    id: 4,
-    title: "Quantum Break",
-    genre: "Sci-Fi",
-    year: 2024,
-    likes: 1876,
-    rating: 4,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&q=75&auto=format&fit=crop",
-    logline: "A physicist discovers time is collapsing and must sacrifice everything to reset the universe."
-  },
-  {
-    id: 5,
-    title: "Paper Hearts",
-    genre: "Romance",
-    year: 2023,
-    likes: 734,
-    rating: 4,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75&auto=format&fit=crop",
-    logline: "Two rivals in a dying bookshop discover love letters from the 1940s that mirror their own story."
-  },
-  {
-    id: 6,
-    title: "Dead Signal",
-    genre: "Horror",
-    year: 2024,
-    likes: 1456,
-    rating: 4,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1551269901-5c5e14c25df7?w=400&q=75&auto=format&fit=crop",
-    logline: "A group of friends receive voicemails from their future selves — all warning of the same fate."
-  },
-  {
-    id: 7,
-    title: "Concrete Kings",
-    genre: "Drama",
-    year: 2023,
-    likes: 892,
-    rating: 4,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1502920917128-1aa500764b12?w=400&q=75&auto=format&fit=crop",
-    logline: "Five childhood friends from the projects must choose between loyalty and survival when one of them makes it big."
-  },
-  {
-    id: 8,
-    title: "The Perfect Heist",
-    genre: "Thriller",
-    year: 2024,
-    likes: 1621,
-    rating: 5,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=75&auto=format&fit=crop",
-    logline: "A master thief plans the impossible — stealing the world's most valuable secret from inside the UN."
-  },
-  {
-    id: 9,
-    title: "Dad's Cooking Again",
-    genre: "Comedy",
-    year: 2023,
-    likes: 543,
-    rating: 4,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&q=75&auto=format&fit=crop",
-    logline: "A widowed father attempts to win a reality cooking show with catastrophically disastrous results."
-  },
-  {
-    id: 10,
-    title: "Iron Meridian",
-    genre: "Action",
-    year: 2024,
-    likes: 1102,
-    rating: 4,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1559038555-d2a10979a0e8?w=400&q=75&auto=format&fit=crop",
-    logline: "A disgraced general must lead a ragtag army to defend the last free city on Earth."
-  },
-  {
-    id: 11,
-    title: "Abuja Royals",
-    genre: "Nollywood",
-    year: 2024,
-    likes: 1789,
-    rating: 5,
-    trending: true,
-    image: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&q=75&auto=format&fit=crop",
-    logline: "A royal family's ancient secret threatens to destroy the most powerful dynasty in West Africa."
-  },
-  {
-    id: 12,
-    title: "Echoes in the Dark",
-    genre: "Thriller",
-    year: 2023,
-    likes: 965,
-    rating: 4,
-    trending: false,
-    image: "https://images.unsplash.com/photo-1458501534264-7d326fa0ca04?w=400&q=75&auto=format&fit=crop",
-    logline: "A blind detective solves crimes using only sound — until a killer begins hunting her through silence."
-  }
+// ─── SUPABASE INIT ────────────────────────────────────────────────────────────
+const SUPABASE_URL  = '%VITE_SUPABASE_URL%';
+const SUPABASE_KEY  = '%VITE_SUPABASE_ANON_KEY%';
+const HAS_SUPABASE  = SUPABASE_URL.startsWith('http');
+
+let sb = null;
+if (HAS_SUPABASE) {
+  try {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch(e) { console.warn('Supabase init failed:', e); }
+}
+
+// Show DB status chip
+const chip = document.getElementById('db-chip');
+chip.style.display = 'inline-flex';
+if (HAS_SUPABASE && sb) {
+  chip.className = 'db-chip live';
+  chip.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#4ade80;"></span> Live DB';
+} else {
+  chip.className = 'db-chip demo';
+  chip.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#fbbf24;"></span> Demo Mode';
+}
+
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+const MOCK = [
+  { id:1, title:"Scarlet Dawn", genre:"Action", year:2024, likes:1243, rating:5, trending:true, image:"https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=400&q=70&auto=format&fit=crop", logline:"An ex-soldier uncovers a corporate conspiracy that threatens to ignite World War III." },
+  { id:2, title:"The Last Monsoon", genre:"Drama", year:2023, likes:987, rating:5, trending:false, image:"https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=70&auto=format&fit=crop", logline:"A family torn apart by ambition must reunite before a catastrophic storm destroys everything." },
+  { id:3, title:"Lagos Nights", genre:"Nollywood", year:2024, likes:2105, rating:5, trending:true, image:"https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=400&q=70&auto=format&fit=crop", logline:"A rising musician navigates love, betrayal, and destiny in the pulsing heart of Lagos." },
+  { id:4, title:"Quantum Break", genre:"Sci-Fi", year:2024, likes:1876, rating:4, trending:true, image:"https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&q=70&auto=format&fit=crop", logline:"A physicist discovers time is collapsing and must sacrifice everything to reset the universe." },
+  { id:5, title:"Paper Hearts", genre:"Romance", year:2023, likes:734, rating:4, trending:false, image:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=70&auto=format&fit=crop", logline:"Two rivals discover love letters from the 1940s that mirror their own story." },
+  { id:6, title:"Dead Signal", genre:"Horror", year:2024, likes:1456, rating:4, trending:true, image:"https://images.unsplash.com/photo-1551269901-5c5e14c25df7?w=400&q=70&auto=format&fit=crop", logline:"Friends receive voicemails from their future selves — all warning of the same fate." },
+  { id:7, title:"Concrete Kings", genre:"Drama", year:2023, likes:892, rating:4, trending:false, image:"https://images.unsplash.com/photo-1502920917128-1aa500764b12?w=400&q=70&auto=format&fit=crop", logline:"Five childhood friends from the projects choose between loyalty and survival." },
+  { id:8, title:"The Perfect Heist", genre:"Thriller", year:2024, likes:1621, rating:5, trending:true, image:"https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=70&auto=format&fit=crop", logline:"A master thief plans the impossible — stealing the world's most valuable secret." },
+  { id:9, title:"Dad's Cooking Again", genre:"Comedy", year:2023, likes:543, rating:4, trending:false, image:"https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&q=70&auto=format&fit=crop", logline:"A widowed father attempts to win a reality cooking show with catastrophically disastrous results." },
+  { id:10, title:"Iron Meridian", genre:"Action", year:2024, likes:1102, rating:4, trending:false, image:"https://images.unsplash.com/photo-1559038555-d2a10979a0e8?w=400&q=70&auto=format&fit=crop", logline:"A disgraced general leads a ragtag army to defend the last free city on Earth." },
+  { id:11, title:"Abuja Royals", genre:"Nollywood", year:2024, likes:1789, rating:5, trending:true, image:"https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&q=70&auto=format&fit=crop", logline:"A royal family's ancient secret threatens the most powerful dynasty in West Africa." },
+  { id:12, title:"Echoes in the Dark", genre:"Thriller", year:2023, likes:965, rating:4, trending:false, image:"https://images.unsplash.com/photo-1458501534264-7d326fa0ca04?w=400&q=70&auto=format&fit=crop", logline:"A blind detective solves crimes using only sound — until a killer hunts her through silence." },
 ];
 
 // ─── STATE ─────────────────────────────────────────────────────────────────────
-let likedMovies = new Set();
-let currentFilter = 'All';
-let currentView = 'home';
+let movies     = [];
+let liked      = new Set();
+let filter     = 'All';
+let view       = 'home';
+let isLoading  = false;
+
+// ─── DATA LAYER ───────────────────────────────────────────────────────────────
+async function loadPitches() {
+  if (!HAS_SUPABASE || !sb) {
+    movies = MOCK.map(m => ({ ...m }));
+    hideSkeleton();
+    renderMovies();
+    return;
+  }
+  try {
+    const { data, error } = await sb.from('pitches').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    movies = (data || []).map(r => ({
+      id:       r.id,
+      title:    r.title,
+      genre:    r.genre || 'Drama',
+      year:     r.year  || new Date(r.created_at).getFullYear(),
+      likes:    r.likes || 0,
+      rating:   r.rating || 4,
+      trending: r.trending || false,
+      image:    r.image || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=70&auto=format&fit=crop',
+      logline:  r.logline || '',
+    }));
+    hideSkeleton();
+    renderMovies();
+  } catch(e) {
+    console.warn('Supabase fetch failed, using mock data:', e);
+    movies = MOCK.map(m => ({ ...m }));
+    hideSkeleton();
+    renderMovies();
+  }
+}
+
+async function addPitch(pitch) {
+  if (!HAS_SUPABASE || !sb) {
+    movies.unshift({ ...pitch, id: Date.now(), likes: 0, rating: 4, trending: false });
+    renderMovies();
+    return;
+  }
+  try {
+    const { error } = await sb.from('pitches').insert([{
+      title:   pitch.title,
+      genre:   pitch.genre,
+      image:   pitch.image || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=70&auto=format&fit=crop',
+      likes:   0,
+      year:    pitch.year,
+      logline: pitch.logline,
+    }]);
+    if (error) throw error;
+    await loadPitches();
+  } catch(e) {
+    console.warn('Insert failed:', e);
+    movies.unshift({ ...pitch, id: Date.now(), likes: 0, rating: 4, trending: false });
+    renderMovies();
+  }
+}
+
+async function likePitch(id) {
+  const movie = movies.find(m => m.id === id);
+  if (!movie) return;
+
+  const wasLiked = liked.has(id);
+  if (wasLiked) {
+    liked.delete(id);
+    movie.likes = Math.max(0, movie.likes - 1);
+  } else {
+    liked.add(id);
+    movie.likes += 1;
+  }
+
+  // Optimistic UI
+  updateLikeBtn(id, movie.likes);
+
+  if (!HAS_SUPABASE || !sb) return;
+  try {
+    await sb.from('pitches').update({ likes: movie.likes }).eq('id', id);
+  } catch(e) {
+    console.warn('Like update failed:', e);
+  }
+}
 
 // ─── RENDER ────────────────────────────────────────────────────────────────────
+function hideSkeleton() {
+  document.getElementById('skeletons').style.display = 'none';
+  document.getElementById('movies-grid').style.display = 'grid';
+}
+
+function getQuery() {
+  const d = document.getElementById('search-input');
+  const m = document.getElementById('search-input-mobile');
+  return ((d && d.value) || (m && m.value) || '').toLowerCase().trim();
+}
+
 function renderMovies() {
-  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const q    = getQuery();
   const grid = document.getElementById('movies-grid');
   grid.innerHTML = '';
 
-  let filtered = movies;
+  let list = [...movies];
+  if (view === 'trending') list = list.filter(m => m.trending);
+  if (filter !== 'All')   list = list.filter(m => m.genre === filter);
+  if (q) list = list.filter(m =>
+    m.title.toLowerCase().includes(q) ||
+    m.genre.toLowerCase().includes(q) ||
+    (m.logline||'').toLowerCase().includes(q)
+  );
 
-  if (currentView === 'trending') {
-    filtered = filtered.filter(m => m.trending);
-  }
+  document.getElementById('movie-count').textContent = list.length;
+  document.getElementById('section-title').textContent = view === 'trending' ? 'Trending Pitches' : 'All Pitches';
+  document.getElementById('no-results').classList.toggle('hidden', list.length > 0);
 
-  if (currentFilter !== 'All') {
-    filtered = filtered.filter(m => m.genre === currentFilter);
-  }
-
-  if (query) {
-    filtered = filtered.filter(m =>
-      m.title.toLowerCase().includes(query) ||
-      m.genre.toLowerCase().includes(query) ||
-      (m.logline && m.logline.toLowerCase().includes(query))
-    );
-  }
-
-  document.getElementById('movie-count').textContent = filtered.length;
-
-  const noResults = document.getElementById('no-results');
-  if (filtered.length === 0) {
-    noResults.classList.remove('hidden');
-    return;
-  } else {
-    noResults.classList.add('hidden');
-  }
-
-  filtered.forEach((movie, index) => {
-    const card = createCard(movie, index);
+  list.forEach((movie, i) => {
+    const card = buildCard(movie, i);
     grid.appendChild(card);
   });
 }
 
-function createCard(movie, index) {
-  const card = document.createElement('div');
-  card.className = 'movie-card';
-  card.style.animationDelay = `${index * 50}ms`;
+function buildCard(movie, i) {
+  const isLiked = liked.has(movie.id);
+  const stars   = '★'.repeat(Math.round(movie.rating||4)) + '☆'.repeat(5 - Math.round(movie.rating||4));
+  const count   = fmtCount(isLiked ? movie.likes : movie.likes);
 
-  const liked = likedMovies.has(movie.id);
-  const stars = '★'.repeat(movie.rating) + '☆'.repeat(5 - movie.rating);
-  const likeCount = liked ? movie.likes + 1 : movie.likes;
+  const el = document.createElement('div');
+  el.className = 'movie-card';
+  el.style.animationDelay = `${Math.min(i * 45, 400)}ms`;
 
-  card.innerHTML = `
+  el.innerHTML = `
     ${movie.trending ? '<div class="trending-badge">🔥 Trending</div>' : ''}
-    <img src="${movie.image}" alt="${movie.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=60&auto=format&fit=crop'">
-    <div class="card-hover-overlay"></div>
+    <img
+      src="${movie.image}"
+      alt="${movie.title}"
+      loading="lazy"
+      onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=60&auto=format&fit=crop'"
+    >
+    <div class="card-shine"></div>
     <div class="card-overlay">
       <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:8px;">
         <div style="flex:1; min-width:0;">
-          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:5px; margin-bottom:7px; flex-wrap:wrap;">
             <span class="genre-badge">${movie.genre}</span>
-            <span class="year-badge">${movie.year}</span>
+            <span class="year-badge">${movie.year||'—'}</span>
           </div>
-          <h3 style="font-size:14px; font-weight:700; line-height:1.3; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${movie.title}</h3>
-          <div class="rating" style="font-size:10px;">${stars}</div>
+          <h3 style="font-size:13px; font-weight:800; line-height:1.3; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.01em;">${movie.title}</h3>
+          <div class="stars" style="font-size:9px;">${stars}</div>
         </div>
         <button
-          class="like-btn ${liked ? 'liked' : ''}"
+          class="like-btn ${isLiked ? 'liked' : ''}"
           id="like-${movie.id}"
-          onclick="toggleLike(event, ${movie.id})"
-          aria-label="Like"
+          onclick="event.stopPropagation(); toggleLike(${JSON.stringify(movie.id)})"
+          aria-label="Like ${movie.title}"
         >
-          <svg width="12" height="12" fill="${liked ? '#e50914' : 'none'}" stroke="${liked ? '#e50914' : 'currentColor'}" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          <span id="count-${movie.id}">${formatCount(likeCount)}</span>
+          <svg width="11" height="11" fill="${isLiked ? '#e50914' : 'none'}" stroke="${isLiked ? '#e50914' : 'currentColor'}" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <span id="count-${movie.id}">${fmtCount(count)}</span>
         </button>
       </div>
     </div>
   `;
-
-  return card;
+  return el;
 }
 
-// ─── LIKE TOGGLE ───────────────────────────────────────────────────────────────
-function toggleLike(event, id) {
-  event.stopPropagation();
-  const movie = movies.find(m => m.id === id);
-  if (!movie) return;
+// ─── LIKE ─────────────────────────────────────────────────────────────────────
+async function toggleLike(id) {
+  await likePitch(id);
+}
 
-  if (likedMovies.has(id)) {
-    likedMovies.delete(id);
-  } else {
-    likedMovies.add(id);
-  }
+function updateLikeBtn(id, newCount) {
+  const btn   = document.getElementById(`like-${id}`);
+  const span  = document.getElementById(`count-${id}`);
+  if (!btn || !span) return;
 
-  const btn = document.getElementById(`like-${id}`);
-  const count = document.getElementById(`count-${id}`);
-  const liked = likedMovies.has(id);
-
-  btn.classList.toggle('liked', liked);
-  count.textContent = formatCount(liked ? movie.likes + 1 : movie.likes);
-
+  const isL = liked.has(id);
+  btn.classList.toggle('liked', isL);
+  span.textContent = fmtCount(newCount);
   const svg = btn.querySelector('svg');
-  svg.setAttribute('fill', liked ? '#e50914' : 'none');
-  svg.setAttribute('stroke', liked ? '#e50914' : 'currentColor');
-
-  // Pulse animation
-  btn.animate([
-    { transform: 'scale(1)' },
-    { transform: 'scale(1.3)' },
-    { transform: 'scale(1)' }
-  ], { duration: 250, easing: 'ease-out' });
+  if (svg) {
+    svg.setAttribute('fill', isL ? '#e50914' : 'none');
+    svg.setAttribute('stroke', isL ? '#e50914' : 'currentColor');
+  }
+  btn.animate([{ transform:'scale(1)' }, { transform:'scale(1.3)' }, { transform:'scale(1)' }], { duration:240, easing:'ease-out' });
 }
 
-function formatCount(n) {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
+function fmtCount(n) {
+  if (n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'k';
   return String(n);
 }
 
-// ─── FILTER ────────────────────────────────────────────────────────────────────
+// ─── FILTER / VIEW ────────────────────────────────────────────────────────────
 function setFilter(btn, genre) {
-  currentFilter = genre;
+  filter = genre;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderMovies();
 }
 
-function filterMovies() {
-  renderMovies();
-}
-
-// ─── NAV ───────────────────────────────────────────────────────────────────────
-function setNav(view) {
-  currentView = view;
-  ['home', 'trending'].forEach(v => {
-    const el = document.getElementById(`nav-${v}`);
-    if (el) el.classList.toggle('active', v === view);
-    const bn = document.getElementById(`bn-${v}`);
-    if (bn) bn.style.color = v === view ? '#e50914' : '#9ca3af';
+function setView(v) {
+  view = v;
+  ['home','trending'].forEach(name => {
+    const n  = document.getElementById(`nav-${name}`);
+    const bn = document.getElementById(`bn-${name}`);
+    if (n)  n.classList.toggle('active', name === v);
+    if (bn) bn.classList.toggle('active', name === v);
   });
-
-  // Update hero for trending
-  if (view === 'trending') {
+  if (v === 'trending') {
     document.getElementById('hero-bg').style.backgroundImage =
       "url('https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=1800&q=80&auto=format&fit=crop')";
   } else {
     document.getElementById('hero-bg').style.backgroundImage =
       "url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=1800&q=80&auto=format&fit=crop')";
   }
-
   renderMovies();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -858,79 +766,49 @@ function scrollToTop() {
 }
 
 // ─── MODAL ─────────────────────────────────────────────────────────────────────
-function openModal() {
-  document.getElementById('modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
+function openModal()  { document.getElementById('modal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal() { document.getElementById('modal').classList.remove('open'); document.body.style.overflow = ''; }
+function onBackdropClick(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function closeModalOnBackdrop(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-});
-
-// ─── SUBMIT PITCH ──────────────────────────────────────────────────────────────
-function submitPitch(e) {
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+async function handleSubmit(e) {
   e.preventDefault();
-  const title = document.getElementById('form-title').value.trim();
-  const genre = document.getElementById('form-genre').value;
-  const year = parseInt(document.getElementById('form-year').value) || 2024;
-  const logline = document.getElementById('form-logline').value.trim();
-  const image = document.getElementById('form-image').value.trim() ||
-    'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=75&auto=format&fit=crop';
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
 
-  const newMovie = {
-    id: Date.now(),
-    title,
-    genre,
-    year,
-    likes: 0,
-    rating: 4,
-    trending: false,
-    image,
-    logline
+  const pitch = {
+    title:   document.getElementById('f-title').value.trim(),
+    genre:   document.getElementById('f-genre').value,
+    year:    parseInt(document.getElementById('f-year').value) || 2024,
+    logline: document.getElementById('f-logline').value.trim(),
+    image:   document.getElementById('f-image').value.trim() || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=70&auto=format&fit=crop',
   };
 
-  movies.unshift(newMovie);
+  await addPitch(pitch);
   closeModal();
-  e.target.reset();
-
-  // Show toast
-  showToast('🎬 Pitch submitted successfully!');
-  renderMovies();
+  document.getElementById('pitch-form').reset();
+  btn.disabled = false;
+  btn.innerHTML = '🎬 Submit Pitch';
+  toast('Pitch submitted successfully!');
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 3000);
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
 }
 
-// ─── RESPONSIVE BOTTOM NAV ─────────────────────────────────────────────────────
-function handleResize() {
-  const nav = document.getElementById('bottom-nav');
-  if (window.innerWidth < 768) {
-    nav.style.display = 'block';
-  } else {
-    nav.style.display = 'none';
-  }
-}
+// ─── SCROLL EFFECT ────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 30);
+}, { passive: true });
 
-// ─── INIT ──────────────────────────────────────────────────────────────────────
-window.addEventListener('resize', handleResize);
-handleResize();
-renderMovies();
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+loadPitches();
 </script>
 </body>
 </html>
