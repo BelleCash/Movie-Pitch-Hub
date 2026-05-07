@@ -3,6 +3,8 @@ import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import type { UserProfile, UserRole } from "@/types";
 
+interface OnboardingData { username: string; bio: string; role: UserRole }
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -12,28 +14,34 @@ interface AuthContextType {
   signUp: (email: string, password: string, role?: UserRole) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateRole: (role: UserRole) => Promise<void>;
+  completeOnboarding: (data: OnboardingData) => Promise<void>;
 }
 
 const LS_PROFILE_KEY = "pf-profile";
+const LS_REDIRECT_KEY = "post_signup_redirect";
 
 function readCachedProfile(): Partial<UserProfile> {
   try { return JSON.parse(localStorage.getItem(LS_PROFILE_KEY) ?? "{}"); }
   catch { return {}; }
 }
 
-function buildProfile(user: User, override?: Partial<UserProfile>): UserProfile {
+function buildProfile(user: User): UserProfile {
   const meta = user.user_metadata ?? {};
   const cached = readCachedProfile();
-  const role: UserRole = (meta.role ?? cached.role ?? "viewer") as UserRole;
-  const subscriptionTier = (meta.subscription_tier ?? cached.subscriptionTier ?? "free") as UserProfile["subscriptionTier"];
   return {
     id: user.id,
     email: user.email ?? "",
-    role,
-    subscriptionTier,
-    isSubscribed: subscriptionTier !== "free",
-    ...override,
+    role: (meta.role ?? cached.role ?? "viewer") as UserRole,
+    subscriptionTier: (meta.subscription_tier ?? cached.subscriptionTier ?? "free") as UserProfile["subscriptionTier"],
+    isSubscribed: (meta.subscription_tier ?? "free") !== "free",
+    username: (meta.username ?? cached.username ?? "") as string,
+    bio: (meta.bio ?? cached.bio ?? "") as string,
+    onboardingComplete: meta.onboarding_complete === true,
   };
+}
+
+function cacheProfile(profile: UserProfile) {
+  try { localStorage.setItem(LS_PROFILE_KEY, JSON.stringify(profile)); } catch {}
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -48,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!u) { setUserProfile(null); return; }
     const profile = buildProfile(u);
     setUserProfile(profile);
-    try { localStorage.setItem(LS_PROFILE_KEY, JSON.stringify(profile)); } catch {}
+    cacheProfile(profile);
   };
 
   useEffect(() => {
@@ -80,8 +88,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return { error: "Supabase not configured" };
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { role, subscription_tier: "free" } },
+      options: { data: { role, subscription_tier: "free", onboarding_complete: false } },
     });
+    if (!error) {
+      try { localStorage.setItem(LS_REDIRECT_KEY, "onboarding"); } catch {}
+    }
     return { error: error?.message ?? null };
   };
 
@@ -95,15 +106,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateRole = async (role: UserRole) => {
     if (!supabase || !user) return;
     await supabase.auth.updateUser({ data: { role } });
-    setUserProfile((p) => p ? { ...p, role } : p);
-    try {
-      const cached = readCachedProfile();
-      localStorage.setItem(LS_PROFILE_KEY, JSON.stringify({ ...cached, role }));
-    } catch {}
+    setUserProfile((p) => {
+      if (!p) return p;
+      const next = { ...p, role };
+      cacheProfile(next);
+      return next;
+    });
+  };
+
+  const completeOnboarding = async ({ username, bio, role }: OnboardingData) => {
+    if (!supabase) return;
+    await supabase.auth.updateUser({
+      data: { username, bio, role, onboarding_complete: true },
+    });
+    setUserProfile((p) => {
+      if (!p) return p;
+      const next = { ...p, username, bio, role, onboardingComplete: true };
+      cacheProfile(next);
+      return next;
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, userProfile, authLoading, signIn, signUp, signOut, updateRole }}>
+    <AuthContext.Provider value={{ user, session, userProfile, authLoading, signIn, signUp, signOut, updateRole, completeOnboarding }}>
       {children}
     </AuthContext.Provider>
   );

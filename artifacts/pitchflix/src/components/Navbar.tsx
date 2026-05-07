@@ -89,6 +89,7 @@ export default function Navbar({ isLive, view, onSetView, search, onSearchChange
                   {user && <MenuLinkRow icon="💳" label="Pricing" href="/pricing" onClose={() => setMenuOpen(false)} />}
                   {isInvestor && <MenuLinkRow icon="💼" label="Investor Dashboard" href="/investor" onClose={() => setMenuOpen(false)} />}
                   {(isCreator || isInvestor) && <MenuLinkRow icon="⊞" label="Dashboard" href="/dashboard" onClose={() => setMenuOpen(false)} />}
+                  <MenuLinkRow icon="⚙️" label="Settings" href="/settings" onClose={() => setMenuOpen(false)} />
                   <MenuRow icon="→" label="Sign Out" onClick={() => { setMenuOpen(false); signOut(); }} danger />
                 </div>
               )}

@@ -1,0 +1,258 @@
+You are working on an existing React + Supabase SaaS app:
+
+🎬 PitchFlix — real-time movie pitch creator platform
+
+Current system already includes:
+
+Supabase Auth (email/password)
+Pitches table + likes system
+Realtime feed
+Basic dashboard
+Guest browsing
+🎯 YOUR TASK
+
+Upgrade this project into a production-grade SaaS onboarding + conversion system with:
+
+✔ auto-redirect signup flow
+✔ onboarding funnel (role + profile setup)
+✔ guest → creator conversion system
+✔ viral onboarding UX
+✔ investor onboarding flow
+✔ settings page
+✔ role-based routing improvements
+✔ clean Supabase integration
+
+DO NOT add fake backend features. Use only existing Supabase tables or safe extensions.
+
+🔐 1. AUTO-REDIRECT AFTER SIGNUP (FIX OTP FLOW UX)
+🎯 Goal
+
+After signup + email verification → user must land in:
+
+/onboarding (first login)
+/dashboard (returning users)
+⚛️ SIGNUP HANDLER
+const handleSignUp = async (email, password) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) throw error;
+
+  localStorage.setItem("post_signup_redirect", "onboarding");
+
+  return data;
+};
+🔁 AUTH STATE LISTENER (AUTO ROUTING)
+useEffect(() => {
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        const redirect = localStorage.getItem("post_signup_redirect");
+
+        if (redirect) {
+          localStorage.removeItem("post_signup_redirect");
+          navigate(`/${redirect}`);
+        } else {
+          navigate("/dashboard");
+        }
+      }
+    }
+  );
+
+  return () => listener.subscription.unsubscribe();
+}, []);
+🧭 2. SMOOTHER CREATOR ONBOARDING FLOW
+🎯 FLOW
+Signup
+ → Email Verified
+ → /onboarding
+ → Role Selection
+ → Profile Setup
+ → Dashboard
+🧠 ONBOARDING GUARD
+useEffect(() => {
+  const checkProfile = async () => {
+    const { data: user } = await supabase.auth.getUser();
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.user.id)
+      .single();
+
+    if (!profile?.role || profile.role === "viewer") {
+      navigate("/onboarding");
+    }
+  };
+
+  checkProfile();
+}, []);
+🎨 ONBOARDING UI MUST INCLUDE:
+Role selection (Viewer / Creator / Investor)
+Username input
+Bio input
+Continue button → dashboard
+🔥 3. GUEST → CREATOR CONVERSION FUNNEL
+🎯 STRATEGY
+
+Trigger signup prompt when user tries:
+
+liking a pitch
+creating a pitch
+accessing dashboard
+⚛️ AUTH GUARD FUNCTION
+const requireAuth = (action) => {
+  const user = supabase.auth.getUser();
+
+  if (!user?.data?.user) {
+    localStorage.setItem("intended_action", action);
+    navigate("/auth");
+    return false;
+  }
+
+  return true;
+};
+❤️ LIKE BUTTON EXAMPLE
+const handleLike = async (pitchId) => {
+  if (!requireAuth("like")) return;
+
+  await supabase.from("pitch_likes").insert({
+    user_id: user.id,
+    pitch_id: pitchId,
+  });
+};
+🔁 RESTORE ACTION AFTER LOGIN
+const action = localStorage.getItem("intended_action");
+
+if (action === "like") {
+  navigate("/");
+}
+
+localStorage.removeItem("intended_action");
+🚀 OPTIONAL (HIGH CONVERSION UPGRADE)
+
+Instead of blocking users:
+
+show modal:
+“Sign up to like this pitch”
+“Become a creator to publish yours”
+🎬 4. VIRAL ONBOARDING UX (TIKTOK STYLE)
+
+Add onboarding screens with:
+
+full-screen step UI
+swipe-like transitions
+progress indicator
+emotional copy:
+“Your first pitch could go viral”
+“Join creators shaping cinema”
+📊 5. CREATOR ACTIVATION SCORE (NEW SYSTEM)
+
+Track onboarding completion:
+
+profile completed → +30
+first pitch created → +50
+first like → +20
+
+Store in profiles.activation_score
+
+💼 6. INVESTOR ONBOARDING FLOW
+
+Separate flow:
+
+Signup
+ → Investor selection
+ → Deal preferences
+ → Watchlist setup
+ → Investor dashboard
+
+Investor sees:
+
+trending pitches
+watchlist
+analytics
+🔁 7. RETENTION LOOP SYSTEM
+
+Add:
+
+daily trending pitches
+“you missed this trending pitch”
+email hooks (future)
+dashboard notifications
+⚙️ 8. SETTINGS PAGE (REQUIRED)
+
+Create /settings
+
+Include:
+
+profile editing
+username change
+role display
+subscription tier (future-ready)
+logout button
+delete account option
+🧱 9. DATABASE ALIGNMENT (NO NEW BREAKING CHANGES)
+
+Use existing:
+
+pitches
+profiles
+pitch_likes
+
+DO NOT break schema.
+
+📌 OPTIONAL ENHANCEMENTS (SAFE ADDITIONS)
+Pitch Detail Page
+
+Route:
+
+/pitch/:id
+
+Includes:
+
+full description
+image/video
+likes
+creator info
+Sticky Navbar
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+Investor Features
+voting system
+restricted comments (role-based)
+watchlists
+Analytics Upgrade
+views tracking table (optional future)
+trending logic (likes velocity)
+🧠 FINAL RESULT
+
+After this upgrade, PitchFlix becomes:
+
+🟣 A full SaaS onboarding + conversion engine
+
+It now includes:
+
+✔ Auto signup → onboarding flow
+✔ Role-based system (viewer / creator / investor)
+✔ Guest → creator conversion funnel
+✔ Viral onboarding UX
+✔ Investor pipeline system
+✔ Settings page
+✔ Retention mechanics
+✔ SaaS-grade architecture
+
+🚀 IMPORTANT EXECUTION RULE
+
+Do NOT overbuild.
+
+Only:
+
+extend existing Supabase tables
+reuse current auth system
+keep React architecture clean
+avoid fake backend logic

@@ -21,6 +21,9 @@ export interface UserProfile {
   role: UserRole;
   subscriptionTier: SubscriptionTier;
   isSubscribed: boolean;
+  username: string;
+  bio: string;
+  onboardingComplete: boolean;
 }
 
 export interface SubscriptionStatus {

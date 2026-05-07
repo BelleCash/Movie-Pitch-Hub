@@ -1,3 +1,4 @@
+import { useLocation } from "wouter";
 import type { Pitch } from "@/types";
 
 interface PitchCardProps {
@@ -16,10 +17,17 @@ const FALLBACK =
   "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=60&auto=format&fit=crop";
 
 export default function PitchCard({ pitch, isLiked, onLike, index }: PitchCardProps) {
+  const [, navigate] = useLocation();
   const stars = "★".repeat(Math.round(pitch.rating || 4)) + "☆".repeat(5 - Math.round(pitch.rating || 4));
 
   return (
-    <div className="movie-card" style={{ animationDelay: `${Math.min(index * 45, 400)}ms` }}>
+    <div
+      className="movie-card"
+      style={{ animationDelay: `${Math.min(index * 45, 400)}ms` }}
+      onClick={() => navigate(`/pitch/${pitch.id}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && navigate(`/pitch/${pitch.id}`)}>
       {pitch.trending && <div className="trending-badge">🔥 Trending</div>}
       <img
         src={pitch.image}
