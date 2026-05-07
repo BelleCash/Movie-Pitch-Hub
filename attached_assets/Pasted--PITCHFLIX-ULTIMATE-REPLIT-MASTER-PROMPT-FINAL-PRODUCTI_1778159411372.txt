@@ -1,0 +1,870 @@
+# 🟣 PITCHFLIX — ULTIMATE REPLIT MASTER PROMPT (FINAL PRODUCTION UPGRADE)
+
+## ⚠️ CORE RULES (MANDATORY)
+
+You are working on an EXISTING React + Supabase SaaS app called:
+
+# 🎬 PitchFlix
+
+DO NOT:
+
+* delete existing architecture
+* rebuild the app from scratch
+* remove Supabase integration
+* remove authentication
+* remove realtime
+* introduce unnecessary libraries
+* break current working flows
+* add fake backend logic
+* add placeholder/demo wording
+
+ONLY:
+
+* fix broken systems
+* complete missing wiring
+* unify architecture
+* finalize production-safe SaaS UX
+* maintain scalability
+* maintain purple cinematic theme
+
+This is the FINAL stabilization + production upgrade pass.
+
+After this pass:
+
+* the app should feel complete
+* all routes should work
+* all major UI should be connected
+* all roles should function
+* onboarding should feel polished
+* no “demo app” feeling should remain
+
+---
+
+# 🎨 1. GLOBAL DESIGN SYSTEM (MANDATORY)
+
+## ❌ REMOVE ALL:
+
+* red theme remnants
+* blue theme remnants
+* mixed accent colors
+* demo badges
+* MVP wording
+* “prototype”
+* “live db”
+* “demo mode”
+* “mock mode”
+
+---
+
+## ✅ GLOBAL COLOR SYSTEM
+
+Use ONLY:
+
+PRIMARY:
+
+```css
+#7c3aed
+```
+
+DARK:
+
+```css
+#5b21b6
+```
+
+ACCENT:
+
+```css
+#a855f7
+```
+
+BACKGROUND:
+
+```css
+#0f0f14
+```
+
+SURFACE:
+
+```css
+#18181f
+```
+
+---
+
+## ✅ BUTTON RULE
+
+ALL buttons globally:
+
+```jsx
+bg-purple-600 hover:bg-purple-700
+```
+
+NO red buttons anywhere.
+
+---
+
+## ✅ UI STYLE
+
+PitchFlix should feel like:
+
+🎬 cinematic creator platform
+💼 investor marketplace
+🚀 premium startup SaaS
+
+Use:
+
+* glassmorphism
+* cinematic gradients
+* subtle glow
+* rounded-2xl cards
+* soft purple shadows
+* premium typography
+
+---
+
+# 🚫 2. REMOVE ALL DEMO BRANDING
+
+## ❌ REMOVE:
+
+* “Live MVP Demo”
+* “Demo Mode”
+* “Realtime Sync”
+* “Live DB”
+* “Prototype”
+* “Mock”
+
+---
+
+## ✅ FOOTER REPLACEMENT
+
+Use:
+
+```jsx
+<footer className="border-t border-purple-500/10 bg-black/20 backdrop-blur-xl">
+  <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+      <h3 className="text-white font-semibold">PitchFlix</h3>
+      <p className="text-sm text-purple-200/70">
+        Discover breakout film ideas before the world does.
+      </p>
+    </div>
+
+    <div className="flex items-center gap-6 text-sm text-purple-200/70">
+      <button>Explore</button>
+      <button>Creators</button>
+      <button>Investors</button>
+      <button>Pricing</button>
+    </div>
+  </div>
+</footer>
+```
+
+---
+
+# 👤 3. USER PROFILE + AVATAR SYSTEM
+
+## DATABASE
+
+Use:
+
+```sql
+profiles.avatar_url
+```
+
+---
+
+## ✅ AVATAR RULE
+
+Every user MUST display:
+
+* avatar in navbar
+* avatar in dashboard
+* avatar in pitch cards
+* avatar in comments-ready UI
+
+---
+
+## ✅ FALLBACK AVATAR
+
+If no avatar exists:
+
+```js
+https://api.dicebear.com/7.x/avataaars/svg?seed=${username}
+```
+
+---
+
+# 🔐 4. AUTH + AUTO REDIRECT FLOW
+
+## ✅ GOAL
+
+After signup + email verification:
+
+* auto redirect user
+* continue onboarding
+* restore intended actions
+
+---
+
+## ✅ SIGNUP FLOW
+
+Store redirect intent:
+
+```js
+localStorage.setItem("post_signup_redirect", "onboarding");
+```
+
+---
+
+## ✅ AUTH LISTENER
+
+On successful auth:
+
+* redirect to onboarding if incomplete
+* otherwise redirect to dashboard
+* restore intended actions
+
+---
+
+## ✅ REQUIRED FLOWS
+
+### Guest
+
+Can:
+
+* browse feed
+* search pitches
+* view pitch detail
+
+Cannot:
+
+* like
+* publish
+* watchlist
+* investor tools
+
+---
+
+### Creator
+
+Can:
+
+* create pitches
+* edit pitches
+* dashboard
+* analytics
+* creator onboarding
+
+---
+
+### Investor
+
+Can:
+
+* investor dashboard
+* watchlists
+* trending discovery
+* deal pipeline
+* save pitches
+
+---
+
+# 🧭 5. ONBOARDING FLOW (MANDATORY)
+
+## ROUTE:
+
+```txt
+/onboarding
+```
+
+---
+
+## FLOW
+
+Signup
+↓
+Email Verification
+↓
+Onboarding
+↓
+Role Selection
+↓
+Profile Setup
+↓
+Dashboard
+
+---
+
+## STEP 1 — ROLE
+
+Cards:
+
+* Viewer
+* Creator
+* Investor
+
+---
+
+## STEP 2 — PROFILE
+
+Fields:
+
+* username
+* bio
+* avatar upload/url
+
+---
+
+## STEP 3 — SUCCESS SCREEN
+
+Route based on role:
+
+* creator → /dashboard
+* investor → /investor
+* viewer → /
+
+---
+
+## ✅ STORE IN:
+
+```sql
+profiles
+```
+
+NOT localStorage as source of truth.
+
+---
+
+# ⚙️ 6. SETTINGS PAGE (FIX COMPLETELY)
+
+## ROUTE:
+
+```txt
+/settings
+```
+
+---
+
+## MUST WORK FULLY
+
+### FETCH PROFILE
+
+```js
+supabase
+  .from("profiles")
+  .select("*")
+  .eq("id", user.id)
+  .single()
+```
+
+---
+
+## UPDATE PROFILE
+
+```js
+await supabase
+  .from("profiles")
+  .update({
+    username,
+    bio,
+    avatar_url
+  })
+  .eq("id", user.id);
+```
+
+---
+
+## SETTINGS FEATURES
+
+* avatar editing
+* username
+* bio
+* role display
+* subscription tier
+* email
+* joined date
+* notification toggles UI
+* privacy placeholders
+* delete account UI
+* logout button
+
+---
+
+# 🎬 7. PITCH SUBMISSION (CRITICAL FIX)
+
+## ❌ CURRENT ISSUE
+
+Pitch form exists but insert is broken.
+
+---
+
+## ✅ FIX INSERT
+
+```js
+await supabase.from("pitches").insert({
+  title,
+  genre,
+  description,
+  image_url,
+  user_id: user.id,
+  likes: 0,
+  tags
+});
+```
+
+---
+
+## FIX COMMON FAILURES
+
+* missing user_id
+* missing await
+* null image_url
+* form not connected
+* loading states missing
+
+---
+
+# 🚀 8. ADD PITCH PAGE — COMPLETE UX UPGRADE
+
+# HEADER
+
+```txt
+🚀 Launch Your Movie Pitch
+Share your story with the world
+```
+
+---
+
+# CORE STORY
+
+## Fields:
+
+* Project Title
+* Genre (multi-select)
+* Hook / Logline (280 chars)
+* Full Synopsis
+
+---
+
+# VISUALS
+
+## Fields:
+
+* Poster Upload
+* Poster URL
+* Video Teaser URL
+
+Supported:
+
+* YouTube
+* Vimeo
+* Cloudinary
+
+---
+
+# PRODUCTION DETAILS
+
+## Fields:
+
+* Estimated Budget
+* Primary Language
+
+Examples:
+
+* English
+* Yoruba
+* Igbo
+* Hausa
+* Pidgin
+
+---
+
+# FOOTER BUTTONS
+
+```txt
+[Save as Draft]
+[Publish Pitch]
+```
+
+---
+
+# 🏷️ 9. TAG / KEYWORD SYSTEM
+
+## DATABASE
+
+ONLY if column missing:
+
+```sql
+alter table public.pitches
+add column if not exists tags text[] default '{}';
+```
+
+---
+
+## TAG INPUT
+
+Support:
+
+```txt
+Sci-Fi, Nollywood, Thriller
+```
+
+Convert:
+
+```js
+tags.split(",").map(tag => tag.trim().toLowerCase())
+```
+
+---
+
+## DISPLAY TAGS
+
+Render tags under pitch cards.
+
+---
+
+## SEARCH MUST INCLUDE:
+
+* title
+* genre
+* description
+* tags
+
+---
+
+# 🔥 10. VIRAL ALGORITHM + TRENDING SYSTEM V2
+
+## CREATE UTILITY
+
+```js
+const calculateTrendingScore = (pitch) => {
+  const likesWeight = pitch.likes * 3;
+
+  const freshnessWeight =
+    Math.max(
+      0,
+      100 -
+      ((Date.now() - new Date(pitch.created_at)) / 3600000)
+    );
+
+  const tagBonus =
+    (pitch.tags?.length || 0) * 5;
+
+  return likesWeight + freshnessWeight + tagBonus;
+};
+```
+
+---
+
+## TRENDING RULE
+
+Trending if:
+
+```js
+score > 120
+```
+
+---
+
+## FEED SORTING
+
+Sort by trending score.
+
+---
+
+## TRENDING BADGE
+
+```jsx
+🔥 Trending
+```
+
+---
+
+# 💼 11. INVESTOR EXPERIENCE (MANDATORY)
+
+## ROUTE:
+
+```txt
+/investor
+```
+
+---
+
+## MUST INCLUDE
+
+### Trending Pitches
+
+### Watchlists
+
+### Deal Pipeline
+
+### Saved Opportunities
+
+### Genre Filters
+
+### Tag Filters
+
+### Trending Alerts
+
+---
+
+## SAVE PITCH FEATURE
+
+Use:
+
+```sql
+investor_watchlists
+```
+
+---
+
+## INVESTOR CTA
+
+“Explore Deals” button MUST work:
+
+```js
+navigate("/investor")
+```
+
+---
+
+# ❤️ 12. LIKE SYSTEM + ENGAGEMENT
+
+Use:
+
+```sql
+pitch_likes
+```
+
+---
+
+## REQUIREMENTS
+
+* one like per user
+* prevent duplicates
+* realtime updates
+* sync pitch_likes → pitches.likes
+
+---
+
+## GUEST CONVERSION
+
+If guest likes:
+
+* show auth modal
+* preserve intended action
+
+---
+
+# 📈 13. CREATOR ACTIVATION + RETENTION SYSTEM
+
+## ADD:
+
+* creator activation score
+* onboarding completion progress
+* engagement milestones
+* daily streak placeholders
+* creator insights UI
+
+DO NOT fake backend data.
+
+Use clean placeholders where needed.
+
+---
+
+# 🎥 14. PITCH DETAIL PAGE
+
+## ROUTE:
+
+```txt
+/pitch/:id
+```
+
+---
+
+## MUST INCLUDE
+
+* hero poster
+* title
+* creator info
+* tags
+* likes
+* trending badge
+* synopsis
+* teaser video embed
+* save/watchlist
+* related pitches
+
+---
+
+# 💰 15. PRICING PAGE (REALISTIC)
+
+## PLANS
+
+### 🟢 Free
+
+Maps to:
+
+```txt
+viewer
+```
+
+Features:
+
+* browse pitches
+* public profiles
+* basic engagement
+
+---
+
+### 🟣 Starter — $9
+
+Maps to:
+
+```txt
+creator
+```
+
+Features:
+
+* upload pitches
+* creator profile
+* analytics
+* genre filters
+
+---
+
+### 💼 Pro Investor — $19
+
+Maps to:
+
+```txt
+investor
+```
+
+Features:
+
+* investor dashboard
+* watchlists
+* deal pipeline
+* trending alerts
+
+---
+
+### 🏢 Studio — $49
+
+Maps to:
+
+```txt
+studio
+```
+
+Features:
+
+* advanced analytics
+* featured placement
+* team access
+
+---
+
+## IMPORTANT
+
+Do NOT fake billing.
+
+Buttons should:
+
+* route to onboarding
+  OR
+* call billing service placeholder
+
+---
+
+# 💳 16. BILLING ARCHITECTURE (KEEP READY)
+
+Maintain provider abstraction:
+
+```txt
+billingService.subscribe()
+```
+
+Adapters:
+
+* Paystack
+* LemonSqueezy
+* Stripe
+* Paddle
+
+DO NOT hardcode provider logic globally.
+
+No real APIs yet.
+
+---
+
+# 🧱 17. DATABASE ARCHITECTURE (DO NOT BREAK)
+
+Maintain relationships:
+
+```txt
+auth.users
+    ↓
+profiles
+    ↓
+subscriptions
+    ↓
+pitches
+    ↓
+pitch_likes
+    ↓
+investor_watchlists
+```
+
+---
+
+# 🔒 18. SECURITY
+
+Maintain:
+
+* Supabase Auth
+* RLS
+* role-based rendering
+* protected routes
+* ownership checks
+
+---
+
+# 📌 19. FINAL QUALITY RULES
+
+After completion:
+
+✅ no broken routes
+✅ no dead buttons
+✅ no fake demo wording
+✅ no red theme remnants
+✅ all pages connected
+✅ investor features visible
+✅ onboarding smooth
+✅ pitch uploads working
+✅ settings working
+✅ explore deals working
+✅ consistent purple cinematic UI
+✅ scalable SaaS architecture
+✅ production-safe Supabase wiring
+✅ zero TypeScript/runtime errors
+
+---
+
+# 🎯 FINAL GOAL
+
+PitchFlix should now feel like:
+
+🎬 Netflix meets Product Hunt for film ideas
+💼 creator-investor marketplace
+🚀 real venture-scale SaaS platform
+
+NOT:
+
+* tutorial project
+* MVP prototype
+* demo app
+* mock UI

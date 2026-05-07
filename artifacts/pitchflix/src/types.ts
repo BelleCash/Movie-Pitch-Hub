@@ -8,6 +8,9 @@ export interface Pitch {
   trending: boolean;
   image: string;
   logline: string;
+  synopsis?: string;
+  video_url?: string;
+  tags?: string[];
   user_id?: string;
   created_at?: string;
 }
@@ -24,6 +27,15 @@ export interface UserProfile {
   username: string;
   bio: string;
   onboardingComplete: boolean;
+}
+
+export interface Comment {
+  id: string;
+  pitchId: string;
+  authorEmail: string;
+  authorName: string;
+  text: string;
+  timestamp: number;
 }
 
 export interface SubscriptionStatus {

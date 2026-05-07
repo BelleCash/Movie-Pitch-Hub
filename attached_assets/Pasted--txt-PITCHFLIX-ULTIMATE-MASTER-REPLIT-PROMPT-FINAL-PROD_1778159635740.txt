@@ -1,0 +1,776 @@
+```txt
+🟣 PITCHFLIX — ULTIMATE MASTER REPLIT PROMPT (FINAL PRODUCTION UPGRADE)
+⚠️ CRITICAL RULES
+
+You are upgrading an EXISTING React + Supabase SaaS application called PitchFlix.
+
+DO NOT:
+- delete existing architecture
+- remove Supabase integration
+- rebuild from scratch
+- change working auth flows
+- introduce unnecessary libraries
+- remove current pages/components
+- remove existing realtime functionality
+- add fake placeholder systems that break production readiness
+
+ONLY:
+- fix broken flows
+- complete missing wiring
+- unify the product
+- improve scalability
+- improve UX
+- improve onboarding
+- improve investor systems
+- improve creator systems
+- improve dashboard systems
+- improve navigation
+- improve analytics
+- improve profile systems
+- improve conversion funnels
+- improve architecture consistency
+
+Maintain ALL existing Supabase structure unless explicitly required.
+
+====================================================
+🟣 CORE PRODUCT POSITIONING
+====================================================
+
+PitchFlix is:
+
+“Product Hunt × IMDb × TikTok for Movie Ideas”
+
+A real-time creator marketplace where:
+- creators publish film ideas
+- investors discover opportunities
+- pitches gain traction through engagement
+- trending concepts rise organically
+- creators build audience + visibility
+
+PitchFlix MUST feel:
+- cinematic
+- premium
+- investor-grade
+- creator-focused
+- startup-quality
+- modern SaaS
+- NOT like a demo app
+
+REMOVE ALL:
+- “demo mode”
+- “live demo”
+- “mock startup”
+- “prototype”
+- fake investor language
+- temporary-looking UI text
+
+====================================================
+🟣 GLOBAL DESIGN SYSTEM (MANDATORY)
+====================================================
+
+UNIFY ENTIRE APP INTO ONE PURPLE THEME.
+
+REMOVE ALL:
+- red accents
+- blue accents
+- mixed color systems
+- inconsistent button colors
+
+PRIMARY COLORS:
+- Purple: #7c3aed
+- Dark Purple: #5b21b6
+- Accent Purple: #a855f7
+
+GLOBAL BUTTON RULE:
+bg-purple-600 hover:bg-purple-700
+
+GLOBAL UI STYLE:
+- glassmorphism cards
+- soft gradients
+- cinematic shadows
+- rounded-2xl / rounded-3xl
+- premium hover states
+- smooth transitions
+- sticky navigation
+- premium SaaS polish
+
+====================================================
+🟣 STICKY NAVIGATION BAR
+====================================================
+
+Navbar MUST remain visible globally.
+
+Use:
+- sticky top-0
+- z-index high enough
+- backdrop blur
+- translucent glass effect
+
+Navbar must adapt by role:
+- guest
+- viewer
+- creator
+- investor
+- studio/admin
+
+====================================================
+🟣 AUTHENTICATION + ONBOARDING FLOW
+====================================================
+
+KEEP:
+- Supabase Auth
+- email/password auth
+- realtime auth listeners
+
+ADD:
+- Google Sign-In
+- smoother onboarding funnel
+- post-signup redirects
+- profile completion system
+
+====================================================
+🟣 AUTO REDIRECT AFTER SIGNUP
+====================================================
+
+FLOW:
+
+Signup
+→ email verification
+→ auto login
+→ onboarding
+→ dashboard
+
+Store:
+localStorage.setItem("post_signup_redirect", "onboarding")
+
+Use Supabase auth listener:
+onAuthStateChange()
+
+AFTER SIGNED_IN:
+- redirect to onboarding if incomplete
+- redirect by role otherwise
+
+====================================================
+🟣 TERMS + PRIVACY FLOW
+====================================================
+
+After first signup:
+show:
+- Terms & Conditions
+- Privacy Policy
+
+User MUST accept before dashboard access.
+
+Store:
+profiles.terms_accepted = true
+
+====================================================
+🟣 PROFILE COMPLETION FLOW
+====================================================
+
+After signup:
+force onboarding before dashboard.
+
+Onboarding steps:
+1. choose role
+2. profile setup
+3. interests
+4. avatar
+5. creator/investor activation
+
+====================================================
+🟣 ROLE SYSTEM
+====================================================
+
+Roles:
+- viewer
+- creator
+- investor
+- admin
+
+Use:
+profiles.role
+
+NOT localStorage as source of truth.
+
+localStorage only as fallback cache.
+
+====================================================
+🟣 USER PROFILE SYSTEM
+====================================================
+
+Every user MUST have:
+- avatar
+- username
+- bio
+- profile page
+- creator/investor identity
+
+Use:
+profiles.avatar_url
+
+If no avatar:
+generate:
+https://api.dicebear.com/7.x/avataaars/svg?seed=${username}
+
+DISPLAY AVATAR IN:
+- navbar
+- dashboard
+- comments
+- pitch cards
+- investor cards
+- settings page
+
+====================================================
+🟣 SETTINGS PAGE (FULLY FUNCTIONAL)
+====================================================
+
+FIX broken settings page.
+
+Settings MUST support:
+- update username
+- update bio
+- update avatar
+- change password
+- notification preferences
+- privacy settings
+- account type
+- billing placeholder
+- delete account
+- logout
+- profile visibility
+- creator visibility
+
+Must properly:
+SELECT profile
+UPDATE profile
+handle loading states
+handle auth guards
+
+====================================================
+🟣 PITCH SUBMISSION FIX (CRITICAL)
+====================================================
+
+FIX ALL BROKEN SUBMISSIONS.
+
+Pitch creation MUST save to Supabase correctly.
+
+Required insert:
+await supabase.from("pitches").insert({...})
+
+Ensure:
+- user_id exists
+- image_url handled
+- genres handled
+- keywords handled
+- teaser link handled
+- await works properly
+- loading states exist
+- toast notifications exist
+
+====================================================
+🟣 ADVANCED ADD PITCH PAGE
+====================================================
+
+HEADER:
+🚀 Launch Your Movie Pitch
+Share your story with the world
+
+====================================================
+🎭 CORE STORY SECTION
+====================================================
+
+Fields:
+- Project Title
+- Genre (MULTI SELECT)
+- Hook / Logline (280 chars)
+- Full Synopsis
+
+====================================================
+🏷️ KEYWORD / TAG SYSTEM
+====================================================
+
+ADD:
+keywords / tags support
+
+Examples:
+- dystopian
+- afrofuturism
+- thriller
+- coming-of-age
+- romance
+- AI
+- nollywood
+- sci-fi
+- superhero
+- crime
+- political drama
+
+Store tags in:
+pitch_tags OR text array
+
+ENABLE:
+- search by tags
+- trending by tags
+- recommendation engine readiness
+
+====================================================
+🖼️ VISUALS SECTION
+====================================================
+
+Support:
+- drag/drop poster upload
+- image URL fallback
+- Supabase Storage uploads
+
+====================================================
+🎥 VIDEO DEMO / TEASER SUPPORT
+====================================================
+
+ADD:
+video teaser upload/link support.
+
+Supported:
+- YouTube
+- Vimeo
+- Cloudinary
+- Supabase Storage videos
+
+Store:
+video_url
+
+Pitch detail page must embed playable trailer/video.
+
+====================================================
+🎬 PRODUCTION DETAILS
+====================================================
+
+Fields:
+- Estimated Budget
+- Primary Language
+- Country
+- Production Stage
+- Target Audience
+- Runtime Type
+
+====================================================
+🟣 FOOTER ACTIONS
+====================================================
+
+Buttons:
+- Save Draft
+- Publish Pitch
+
+====================================================
+🟣 PITCH DETAIL PAGE
+====================================================
+
+MAKE ALL PITCH CARDS CLICKABLE.
+
+Route:
+ /pitch/:id
+
+Pitch detail page MUST include:
+- poster
+- teaser video
+- synopsis
+- metadata
+- tags
+- creator profile
+- likes
+- comments
+- investor votes
+- watchlist save
+- engagement stats
+- related pitches
+
+====================================================
+🟣 COMMENT SYSTEM
+====================================================
+
+ADD COMMENTS.
+
+RULE:
+Only investors can comment.
+
+Creators can reply later.
+
+====================================================
+🟣 INVESTOR SYSTEM
+====================================================
+
+FULLY ENABLE INVESTOR FEATURES.
+
+Investor Dashboard:
+- trending pitches
+- watchlists
+- saved opportunities
+- pitch pipeline
+- investment interest tracking
+- voting
+- analytics
+- deal flow UI
+
+====================================================
+🟣 EXPLORE DEALS PAGE
+====================================================
+
+FIX:
+Explore Deals button
+
+ROUTE:
+ /investor
+
+Must display:
+- trending opportunities
+- investor picks
+- top creators
+- most liked pitches
+- recently exploding pitches
+
+====================================================
+🟣 INVESTOR VOTING SYSTEM
+====================================================
+
+ADD:
+investor voting system.
+
+Investors can:
+- upvote pitches
+- express interest
+- save pitches
+
+Tables:
+pitch_votes
+investor_watchlists
+
+====================================================
+🟣 FEEDBACK PAGE
+====================================================
+
+ADD:
+feedback/discussion page per pitch.
+
+Features:
+- investor comments
+- creator updates
+- engagement thread
+- reactions
+- production discussions
+
+====================================================
+🟣 ANALYTICS SYSTEM
+====================================================
+
+Dashboard MUST include REAL analytics.
+
+Examples:
+- profile views
+- pitch views
+- likes
+- saves
+- watchlist adds
+- engagement %
+- trending score
+- investor interest
+
+====================================================
+🟣 PRO INSIGHT SYSTEM
+====================================================
+
+ADD:
+AI-style insight cards.
+
+Examples:
+“Your pitch is in the top 5% of Sci-Fi this week.”
+“Investor saves increased 42% today.”
+“Your thriller tag is trending.”
+
+====================================================
+🟣 VIRAL ALGORITHM + TRENDING SYSTEM V2
+====================================================
+
+BUILD A REAL TRENDING ENGINE.
+
+Trending score should combine:
+- likes
+- views
+- comments
+- watchlists
+- investor votes
+- shares
+- velocity
+- recency
+- engagement rate
+- saves
+- teaser plays
+- profile visits
+
+Prioritize:
+FAST GROWING pitches
+not just highest total likes.
+
+Add:
+🔥 Trending
+🚀 Rising Fast
+💎 Hidden Gem
+👀 Investor Watching
+
+====================================================
+🟣 CREATOR ACTIVATION SCORE
+====================================================
+
+ADD:
+creator activation system.
+
+Score based on:
+- completed profile
+- uploaded avatar
+- published pitch
+- added teaser
+- received likes
+- responded to comments
+
+Show progress bar.
+
+====================================================
+🟣 VIRAL TIKTOK-STYLE ONBOARDING
+====================================================
+
+Onboarding should feel:
+- animated
+- cinematic
+- swipe-style
+- engaging
+- social-first
+
+Include:
+- progress indicators
+- transitions
+- creator hype messaging
+- investor discovery messaging
+
+====================================================
+🟣 GUEST → CREATOR CONVERSION FUNNEL
+====================================================
+
+Guests can:
+- browse feed
+- explore pitches
+
+BUT:
+attempting actions triggers signup modal.
+
+Actions:
+- like
+- comment
+- save
+- vote
+- publish
+
+Store intended action:
+localStorage.setItem("intended_action", action)
+
+Restore after login.
+
+====================================================
+🟣 PRICING PAGE (MAKE REALISTIC)
+====================================================
+
+NO fake promises.
+
+Plans MUST align to actual app capabilities.
+
+FREE:
+- browse
+- like
+- profiles
+
+STARTER:
+- upload pitches
+- creator dashboard
+- analytics
+
+PRO INVESTOR:
+- investor dashboard
+- watchlists
+- voting
+- alerts
+
+STUDIO:
+- advanced analytics
+- team features
+- featured placement
+
+Buttons should:
+- connect to onboarding
+OR
+- connect to billing adapters
+
+NO fake checkout flows.
+
+====================================================
+🟣 BILLING ARCHITECTURE
+====================================================
+
+KEEP provider abstraction.
+
+Support adapters:
+- Paystack
+- LemonSqueezy
+- Stripe
+- Paddle
+
+Do NOT fully implement billing yet.
+
+Only:
+- architecture
+- provider abstraction
+- upgrade flows
+
+====================================================
+🟣 VIDEO + MEDIA STORAGE
+====================================================
+
+Use:
+Supabase Storage
+
+Support:
+- posters
+- trailers
+- creator avatars
+
+====================================================
+🟣 DATABASE REQUIREMENTS
+====================================================
+
+ENSURE ALL TABLES EXIST:
+
+- profiles
+- subscriptions
+- pitches
+- pitch_likes
+- pitch_votes
+- investor_watchlists
+- comments
+- pitch_views
+
+KEEP:
+pitches.likes
+for performance caching.
+
+====================================================
+🟣 RLS + SECURITY
+====================================================
+
+ENSURE:
+- RLS enabled
+- ownership policies
+- investor-only comment enforcement
+- authenticated uploads
+- safe updates
+- protected dashboard routes
+
+====================================================
+🟣 REALTIME SYSTEM
+====================================================
+
+KEEP REALTIME ACTIVE.
+
+Realtime must sync:
+- likes
+- comments
+- new pitches
+- investor votes
+- watchlists
+- analytics counters
+
+====================================================
+🟣 SEARCH + DISCOVERY
+====================================================
+
+ADD:
+- tag search
+- genre filtering
+- creator search
+- trending filters
+- investor discovery filters
+
+====================================================
+🟣 RETENTION LOOP SYSTEM
+====================================================
+
+ADD engagement loops:
+- trending alerts
+- investor activity notifications
+- creator milestones
+- profile completion nudges
+- “your pitch is gaining traction”
+- “new investor viewed your pitch”
+
+====================================================
+🟣 STANDOUT FEATURES
+====================================================
+
+ADD architecture readiness for:
+- virtual pitch rooms
+- AI script scoring
+- collaborator matching
+- production budgeting UI
+- studio scouting
+- recommendation engine
+
+====================================================
+🟣 FINAL QUALITY RULES
+====================================================
+
+FINAL RESULT MUST FEEL:
+- startup-grade
+- production-ready
+- cinematic
+- polished
+- scalable
+- investor-attractive
+- creator-focused
+
+NO:
+- broken routes
+- fake buttons
+- dead pages
+- inconsistent themes
+- unfinished flows
+- “demo” wording
+- placeholder investor systems
+
+====================================================
+🟣 SUCCESS CRITERIA
+====================================================
+
+After upgrade:
+
+✔ unified purple cinematic SaaS theme
+✔ working auth
+✔ onboarding funnel
+✔ Google sign in
+✔ working settings page
+✔ working profile system
+✔ working pitch uploads
+✔ video teaser support
+✔ interactive pitch pages
+✔ investor dashboard
+✔ investor voting
+✔ comments
+✔ analytics
+✔ trending algorithm
+✔ keyword/tag system
+✔ sticky navbar
+✔ onboarding flow
+✔ avatar system
+✔ creator activation score
+✔ explore deals working
+✔ role-based access
+✔ Supabase realtime active
+✔ scalable architecture
+✔ no demo branding
+✔ premium SaaS polish
+```

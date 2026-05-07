@@ -35,6 +35,8 @@ export default function Navbar({ isLive, view, onSetView, search, onSearchChange
   }, []);
 
   const initial = user?.email?.[0]?.toUpperCase() ?? "?";
+  const avatarSeed = encodeURIComponent(userProfile?.username || user?.email?.split("@")[0] || "user");
+  const avatarImg = `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=7c3aed&backgroundType=solid`;
   const role = userProfile?.role ?? "viewer";
   const isInvestor = role === "investor";
   const isCreator = role === "creator";
@@ -72,8 +74,9 @@ export default function Navbar({ isLive, view, onSetView, search, onSearchChange
           {user ? (
             <div style={{ position: "relative" }} ref={menuRef}>
               <button onClick={() => setMenuOpen((o) => !o)}
-                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", border: "none", cursor: "pointer", color: "#fff", fontWeight: 800, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {initial}
+                style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", border: "2px solid rgba(124,58,237,0.4)", cursor: "pointer", color: "#fff", fontWeight: 800, fontSize: 14, fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", padding: 0 }}>
+                <img src={avatarImg} alt={initial} style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               </button>
               {menuOpen && (
                 <div style={{ position: "absolute", right: 0, top: 44, background: "#14141e", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14, padding: 8, minWidth: 220, zIndex: 100, boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}>

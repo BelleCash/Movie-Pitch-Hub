@@ -113,7 +113,7 @@ export default function Home() {
           Trending
         </button>
         <button onClick={handleOpenCreate}
-          style={{ background: "#e50914", border: "none", width: 52, height: 52, borderRadius: "50%", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 20px rgba(229,9,20,0.42)", marginBottom: 4, flexShrink: 0, transition: "transform 0.2s" }}
+          style={{ background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", border: "none", width: 52, height: 52, borderRadius: "50%", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 20px rgba(124,58,237,0.42)", marginBottom: 4, flexShrink: 0, transition: "transform 0.2s" }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
