@@ -1,0 +1,359 @@
+PROJECT CONTEXT
+
+You are working on an existing React + Supabase SaaS application called:
+
+🎬 PitchFlix — a real-time creator marketplace for movie ideas.
+
+The app already includes:
+
+React (Vite)
+TailwindCSS
+Supabase Auth
+Supabase Database
+Supabase Realtime
+Creator dashboards
+Pitch feeds
+Image uploads
+
+Now upgrade the platform into a:
+
+💼 Multi-role, investor-ready SaaS marketplace with subscription monetization and provider-agnostic billing architecture.
+
+🎯 PRIMARY OBJECTIVES
+
+Implement ALL of the following:
+
+💼 INVESTOR MODE
+
+Add a new Investor role with:
+
+Investor dashboard
+Watchlist system
+Deal tracking UI
+Subscription-gated access
+Role-aware navigation
+Investor KPIs
+💰 BILLING + MONETIZATION SYSTEM
+
+Build a provider-agnostic billing architecture.
+
+DO NOT tightly couple billing to Stripe.
+
+The billing system must support future providers:
+
+Stripe
+Paystack
+Lemon Squeezy
+Paddle
+
+For now:
+
+✔ implement mock subscription state
+✔ implement pricing tiers
+✔ implement billing abstraction layer
+✔ implement gated premium access
+✔ implement pricing page UI
+
+DO NOT require live Stripe keys.
+
+🎨 PURPLE PREMIUM THEME
+
+Replace ALL red accents with:
+
+purple-500
+purple-600
+purple gradients
+soft glassmorphism
+cinematic SaaS aesthetic
+⚛️ REQUIRED ARCHITECTURE
+/src
+  /components
+    /auth
+      AuthModal.jsx
+      ProtectedRoute.jsx
+
+    /billing
+      PricingCard.jsx
+      InvestorPaywall.jsx
+
+    /dashboard
+      Dashboard.jsx
+      InvestorDashboard.jsx
+
+    /layout
+      Navbar.jsx
+
+    /pitches
+      PitchCard.jsx
+      PitchGrid.jsx
+
+  /pages
+    Home.jsx
+    Pricing.jsx
+    InvestorDashboard.jsx
+
+  /context
+    AuthContext.jsx
+    BillingContext.jsx
+
+  /services
+    /billing
+      billingService.js
+      providers/
+        stripeProvider.js
+        paystackProvider.js
+        lemonSqueezyProvider.js
+        paddleProvider.js
+
+  /hooks
+    useBilling.js
+    usePitches.js
+
+  /lib
+    supabase.js
+
+  App.jsx
+🎨 1. GLOBAL UI THEME CHANGE
+
+Replace ALL:
+
+red-500 → purple-500
+red-600 → purple-600
+DESIGN DIRECTION
+Glassmorphism cards
+Purple gradients
+Soft shadows
+Rounded-2xl everywhere
+Smooth hover animations
+Premium startup aesthetic
+BUTTON STYLE
+className="
+bg-purple-600
+hover:bg-purple-700
+text-white
+rounded-xl
+transition-all
+duration-300
+"
+🔐 2. ROLE-BASED AUTH SYSTEM
+
+Extend user model:
+
+{
+  id: string,
+  email: string,
+  role: "viewer" | "creator" | "investor",
+  subscriptionTier: "free" | "starter" | "pro" | "studio",
+  isSubscribed: boolean
+}
+💼 3. AUTH MODAL UPGRADE
+
+Add role-aware signup buttons:
+
+Creator
+Investor
+Viewer
+INVESTOR BUTTON STYLE
+<button
+  onClick={() => login("investor")}
+  className="bg-black text-white rounded-xl py-3 font-bold"
+>
+  💼 Sign Up as Investor
+</button>
+💰 4. BILLING ABSTRACTION LAYER (IMPORTANT)
+
+DO NOT directly call Stripe inside components.
+
+Create generic billing service:
+
+billingService.subscribe({
+  provider: "stripe",
+  tier: "pro"
+});
+⚙️ PROVIDER ADAPTERS
+
+Create provider adapters:
+
+/providers
+  stripeProvider.js
+  paystackProvider.js
+  lemonSqueezyProvider.js
+  paddleProvider.js
+PROVIDER CONTRACT
+
+Each provider must expose:
+
+subscribe()
+cancel()
+getSubscriptionStatus()
+🧠 IMPORTANT RULE
+
+For now:
+
+DO NOT integrate live payments.
+
+Instead:
+
+simulate subscription success
+mock billing state
+build architecture properly
+
+This keeps development provider-independent.
+
+💳 5. PRICING SYSTEM
+
+Create /pages/Pricing.jsx
+
+TIERS
+🟢 FREE — $0
+Browse pitches
+Basic likes
+🟣 STARTER — $9/month
+Creator profile
+Upload pitches
+Basic analytics
+💼 PRO INVESTOR — $19/month
+Investor dashboard
+Watchlists
+Deal flow access
+🏢 STUDIO — $49/month
+Unlimited uploads
+Advanced analytics
+Featured placement
+Team-ready architecture
+🎨 PRICING CARD UI
+
+Use:
+
+purple gradients
+glow hover
+scale animation
+recommended badge
+🔐 6. SUBSCRIPTION GATING
+
+If:
+
+user.role === "investor" && !user.isSubscribed
+
+Show:
+
+<InvestorPaywall />
+
+Otherwise:
+
+<InvestorDashboard />
+💼 7. INVESTOR DASHBOARD
+
+Create:
+
+📁 /pages/InvestorDashboard.jsx
+
+INCLUDE
+
+✔ Available capital
+✔ Watchlist
+✔ Deal pipeline
+✔ Trending pitches
+✔ Saved opportunities
+
+⚡ 8. REALTIME INTEGRATION
+
+Realtime updates must continue working:
+
+new pitches
+likes
+trending content
+
+Investor dashboard should update live.
+
+🧭 9. ROLE-BASED NAVIGATION
+VIEWER
+Browse only
+CREATOR
+Upload pitches
+INVESTOR
+Find deals
+Watchlist
+Dashboard
+🚀 10. LANDING PAGE COPY (IMPORTANT)
+
+Update Hero section copy:
+
+HEADLINE
+
+“Where movie ideas become investable opportunities.”
+
+SUBTEXT
+
+“PitchFlix connects creators and investors in a real-time marketplace for film concepts, traction, and deal discovery.”
+
+CTA BUTTONS
+PRIMARY
+
+🎬 Start Pitching
+
+SECONDARY
+
+💼 Explore Deals
+
+💰 11. YC-STYLE STARTUP POSITIONING
+
+The UI and copy should position the product as:
+
+A creator economy marketplace for entertainment IP.
+
+The app should feel like:
+
+Product Hunt
+AngelList
+IMDb
+Behance
+
+combined into one cinematic platform.
+
+📈 12. INVESTOR STORY (VERY IMPORTANT)
+
+The product now supports:
+
+✔ Two-sided marketplace
+✔ Recurring SaaS revenue
+✔ Creator economy mechanics
+✔ Investor discovery engine
+✔ Real-time engagement loops
+
+🚀 13. FUTURE-READY BILLING STRATEGY
+
+The billing layer must be future-ready for:
+
+Nigerian payments (Paystack)
+Global SaaS billing (Stripe)
+Creator monetization
+Investor subscriptions
+Marketplace commissions
+🏁 FINAL SUCCESS CRITERIA
+
+The upgraded app must:
+
+✔ Support investor accounts
+✔ Support creator accounts
+✔ Have subscription-gated investor features
+✔ Use provider-agnostic billing architecture
+✔ Have purple premium SaaS UI
+✔ Maintain realtime Supabase functionality
+✔ Feel investor-demo ready
+
+⚠️ FINAL INSTRUCTION
+
+Do NOT overengineer.
+
+Focus on:
+
+architecture
+scalability
+clean UX
+SaaS polish
+startup positioning
+
+This should feel like:
+
+“A YC-ready entertainment-tech startup MVP.”
