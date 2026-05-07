@@ -1,44 +1,114 @@
 🎬 PitchFlix — Real-Time Movie Pitch SaaS
 
-A full-stack, real-time movie pitch sharing platform built with React + Supabase.
-Users can sign up, create movie ideas, upload images, and get instant engagement through live likes and realtime updates.
-
-🚀 Live Features
-⚛️ Modern React (Vite) frontend
-🔐 Supabase Authentication (email/password)
-⚡ Real-time database updates (Supabase Realtime)
-🖼️ Image upload system (Supabase Storage)
-❤️ Live likes system
-👤 User-specific dashboards
-🎯 Protected routes (auth-based access)
-🎬 Creator-style pitch posting system
-📱 Fully responsive UI (mobile + desktop)
-🧠 Product Vision
-
-PitchFlix is a creator economy platform for movie ideas.
-
-Users can:
-
-Share movie pitch concepts
-Upload posters / visuals
-Gain engagement through likes
-Build a creative profile over time
+A real-time, creator economy SaaS platform where users submit movie ideas (“pitches”), gain engagement through likes, and build creative profiles — with investor tracking and monetization architecture built in.
 
 Think:
 
-“Product Hunt × IMDb × TikTok for movie ideas”
+Product Hunt × IMDb × TikTok for movie ideas
 
+🚀 Overview
+
+PitchFlix is a full-stack SaaS platform built with React + Supabase, designed for real-time interaction, creator monetization, and investor discovery of trending film concepts.
+
+Users can:
+
+Submit movie pitches
+Upload images / posters
+Gain real-time engagement
+Build creator profiles
+Investors can track trending ideas (Investor Mode)
+🟣 Product Vision
+
+“Where movie ideas become investable opportunities.”
+
+PitchFlix transforms creative concepts into:
+
+Social assets (likes + engagement)
+Creator profiles
+Investor-tracked opportunities
+⚡ Live Features
+⚛️ Frontend
+React (Vite) SaaS architecture
+Purple-themed modern UI (indigo/violet system)
+Fully responsive (mobile + desktop)
+Component-based scalable structure
+
+🔐 Authentication (Supabase)
+Email/password login
+Persistent sessions
+Role-based system:
+Viewer
+User
+Creator
+Investor (Investor Mode)
+
+⚡ Real-Time System
+Supabase Realtime subscriptions
+Instant updates:
+New pitches appear live
+Likes update instantly
+Feed syncs automatically
+
+🖼️ Image System
+Supabase Storage integration
+Poster upload per pitch
+Fallback URL support
+
+❤️ Engagement System
+Like system with real-time updates
+Trending-ready architecture
+Foundation for recommendation engine
+
+📊 Investor Mode (NEW)
+Investor dashboard
+Trending pitch discovery
+Watchlist system
+KPI-based insights (engagement, traction)
+
+💳 Monetization Layer (Architecture Ready)
+
+Subscription tiers:
+
+Free
+Starter
+Pro
+Studio
+
+Billing system supports:
+
+Paystack (Africa-ready)
+Lemon Squeezy (global SaaS)
+Stripe (future-ready)
+Paddle (enterprise-ready)
+🧠 Architecture Philosophy
+
+PitchFlix is built as a real SaaS system, not a demo:
+
+Supabase-first backend
+Provider-agnostic billing system
+Role-based access control
+Real-time data architecture
+Scalable React component structure
 ⚙️ Tech Stack
-Frontend: React (Vite)
-Styling: Tailwind CSS
-Backend: Supabase
-Auth: Supabase Auth
-Database: PostgreSQL (Supabase)
-Realtime: Supabase Realtime Channels
-Storage: Supabase Buckets
-Routing: Wouter
-UI Icons: Lucide React
-Notifications: Sonner
+
+Frontend
+
+React (Vite)
+Tailwind CSS
+Lucide Icons
+
+Backend
+
+Supabase (PostgreSQL)
+Supabase Auth
+Supabase Realtime
+Supabase Storage
+
+Architecture
+
+Context API (state management)
+Hooks-based API layer
+Modular component system
 📁 Project Structure
 /src
   /components
@@ -53,66 +123,24 @@ Notifications: Sonner
   /pages
     Home
     Dashboard
+    Pricing
+    Investor
 
   /context
     AuthContext
 
   /hooks
     usePitches
+    useAuth
 
   /lib
     supabase
 
   App.tsx
   main.tsx
-🔐 Authentication System
-Email/password signup & login
-Persistent sessions
-Auth-protected routes
-User session stored globally via Context API
-User Permissions
-Role	Permissions
-Guest	View pitches
-User	Create + like + upload
-Creator	Full dashboard access
-⚡ Realtime System
-
-PitchFlix uses Supabase Realtime to sync updates instantly:
-
-New pitches appear instantly
-Likes update live across all users
-Deletes reflect immediately
-
-No refresh required.
-
-🖼️ Image Uploads
-Upload pitch posters via Supabase Storage
-Fallback support (URL input)
-Public bucket configuration required
-❤️ Engagement System
-Users can like pitches
-Trending logic supported
-Real-time UI updates
-👤 Dashboard
-
-Each user has a personal dashboard:
-
-Their created pitches
-Account overview
-Authenticated access only
-🔒 Security
-Row Level Security (RLS) enabled
-Users can only modify their own data
-Secure Supabase API usage
-Protected frontend routes
-🧪 Key Features Implemented
-Real-time Supabase channel (fixed StrictMode duplication)
-Unique channel subscription per mount
-Clean React migration from legacy JS
-Fully modular component system
-Optimized hooks architecture
-Live database connection confirmed
-🧱 Database Schema
+  
+🗄️ Database Schema
+Core Table
 create table pitches (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id),
@@ -123,47 +151,110 @@ create table pitches (
   likes int default 0,
   created_at timestamp default now()
 );
-⚡ Setup Instructions
-1. Clone repo
+SaaS Data Layer (Extended Architecture)
+
+Planned / in progress tables:
+
+profiles → user identity + role + subscription tier
+subscriptions → billing + provider tracking
+pitch_likes → engagement tracking (one-like-per-user)
+investor_watchlists → saved pitches for investors
+⚡ Real-Time System
+
+Supabase Realtime enables:
+
+Instant pitch updates
+Live likes sync
+No page refresh required
+Event-driven UI updates
+
+🔐 Security
+Row Level Security (RLS) enabled
+Users can only modify their own data
+Protected frontend routes
+Secure Supabase API access
+
+👤 User Roles
+Role	Permissions
+Viewer	Browse pitches
+User	Like content
+Creator	Upload + manage pitches
+Investor	Track + analyze trending ideas
+📊 Dashboard System
+
+Each user gets:
+
+Personal pitch list
+Engagement metrics
+Creator analytics
+Investor insights (if enabled)
+
+🎨 UI System
+Purple SaaS design system
+Glassmorphism cards
+Cinematic feed layout
+Smooth animations
+Mobile-first responsive design
+
+🧪 Key Technical Highlights
+Real-time Supabase channels (stable subscriptions)
+Optimized React hooks architecture
+Modular SaaS component design
+Clean role-based UX system
+Scalable backend schema
+Provider-agnostic billing layer
+
+🚀 Setup Instructions
 git clone https://github.com/yourusername/pitchflix.git
 cd pitchflix
-2. Install dependencies
 npm install
-3. Add environment variables
+Environment Variables
 VITE_SUPABASE_URL=your-url
 VITE_SUPABASE_ANON_KEY=your-key
-4. Run development server
+Run Development Server
 npm run dev
-📈 What Makes This Special
+📈 What Makes PitchFlix Special
 
-PitchFlix is not just a CRUD app.
+PitchFlix is not a CRUD app.
 
 It demonstrates:
 
-Real-time architecture
-Auth-driven UX
+Real-time SaaS architecture
 Creator economy mechanics
-Scalable SaaS structure
-Production-ready React patterns
+Investor tracking system
+Role-based monetization design
+Production-grade React patterns
+🧭 Current Status
+✅ Completed
+React SaaS frontend
+Supabase integration
+Auth system
+Real-time feed
+Pitch creation system
+Like system
+Investor UI
+Pricing system
+Billing abstraction layer
+🚧 In Progress
+Payment gateway integration (Paystack / Lemon Squeezy)
+Advanced analytics engine
+Recommendation system
+Notifications system
+Production hardening
+🧠 System Summary
+
+PitchFlix has evolved into:
+
+A real-time, creator economy SaaS platform with investor discovery, engagement-driven ranking, and scalable monetization architecture.
+
 🚀 Future Roadmap
-💰 Stripe payments (creator monetization)
-🔔 Notifications system
-👥 Follow system (social layer)
-🏆 Trending algorithm v2
-📊 Creator analytics dashboard
-🌍 Deployment (Vercel + Supabase production)
-🧠 Architecture Summary
-
-This project was migrated from a vanilla JS prototype into a:
-
-Fully structured, real-time SaaS-grade React application powered by Supabase
-
-📷 UI Status
-Live DB connected ✅
-Realtime sync active ⚡
-Auth system working 🔐
-3+ pitches loading dynamically 🎬
-No runtime errors 🟢
+AI pitch scoring system
+Viral ranking algorithm v2
+Creator revenue sharing
+Studio matchmaking system
+Global investor marketplace
 👨‍💻 Author
 
-Built as part of a full SaaS migration sprint using React + Supabase architecture.
+Built as part of a SaaS migration sprint using:
+
+React + Supabase + real-time architecture principles
