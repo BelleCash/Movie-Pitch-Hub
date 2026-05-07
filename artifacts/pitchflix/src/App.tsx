@@ -1,26 +1,34 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { BillingProvider } from "@/context/BillingContext";
 import Home from "@/pages/Home";
 import Dashboard from "@/pages/Dashboard";
+import Pricing from "@/pages/Pricing";
+import InvestorDashboard from "@/pages/InvestorDashboard";
 
 function NotFound() {
   return (
     <div style={{ minHeight: "100vh", background: "#0b0b0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
       <div style={{ fontSize: 64 }}>🎬</div>
       <h1 style={{ fontSize: 24, fontWeight: 800 }}>Page not found</h1>
-      <a href="/" style={{ color: "#e50914", fontSize: 14, fontWeight: 600 }}>← Back to PitchFlix</a>
+      <a href="/" style={{ color: "#8b5cf6", fontSize: 14, fontWeight: 600 }}>← Back to PitchFlix</a>
     </div>
   );
 }
 
-function Router() {
+function AppRoutes() {
+  const { user, userProfile } = useAuth();
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route component={NotFound} />
-    </Switch>
+    <BillingProvider userId={user?.id} userRole={userProfile?.role}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/investor" component={InvestorDashboard} />
+        <Route component={NotFound} />
+      </Switch>
+    </BillingProvider>
   );
 }
 
@@ -28,7 +36,7 @@ export default function App() {
   return (
     <AuthProvider>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-        <Router />
+        <AppRoutes />
       </WouterRouter>
       <Toaster
         theme="dark"
@@ -36,7 +44,7 @@ export default function App() {
         toastOptions={{
           style: {
             background: "#14141e",
-            border: "1px solid rgba(229,9,20,0.35)",
+            border: "1px solid rgba(124,58,237,0.35)",
             borderRadius: 14,
             color: "#fff",
             fontFamily: "Inter, sans-serif",

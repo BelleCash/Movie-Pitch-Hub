@@ -168,7 +168,7 @@ export default function CreatePitchModal({ isOpen, onClose, onCreated }: CreateP
 
           <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
             <button type="button" className="btn-ghost" onClick={close} style={{ flex: 1 }}>Cancel</button>
-            <button type="submit" className="btn-red" disabled={loading} style={{ flex: 2, justifyContent: "center" }}>
+            <button type="submit" className="btn-purple" disabled={loading} style={{ flex: 2, justifyContent: "center" }}>
               {loading ? (statusMsg || "Submitting…") : "🎬 Submit Pitch"}
             </button>
           </div>

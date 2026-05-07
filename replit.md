@@ -1,6 +1,6 @@
 # PitchFlix
 
-A cinematic Netflix-style movie pitch platform — creators can sign up, submit pitches, like others' work, and see real-time updates.
+A cinematic, investor-ready SaaS marketplace for movie pitches — creators pitch ideas, investors discover deals, all in real-time.
 
 ## Run & Operate
 
@@ -14,54 +14,87 @@ A cinematic Netflix-style movie pitch platform — creators can sign up, submit 
 - Frontend: Vite + React 19 + Tailwind CSS v4 (via @tailwindcss/vite)
 - Routing: wouter (client-side, base from `import.meta.env.BASE_URL`)
 - Toasts: sonner
-- Auth: Supabase Auth (email + password)
+- Auth: Supabase Auth (email + password) with multi-role signup
 - Database: Supabase PostgreSQL via `@supabase/supabase-js`
 - Realtime: Supabase Realtime (random channel name per mount to avoid StrictMode conflicts)
 - Storage: Supabase Storage bucket `posters` for image uploads
+- Billing: Provider-agnostic billing abstraction (mock mode, ready for Stripe/Paystack/Paddle/LemonSqueezy)
 
 ## Where things live
 
 ```
 artifacts/pitchflix/
-  index.html                     — clean React mount point
+  index.html
   src/
-    main.tsx                     — entry point
-    index.css                    — Tailwind v4 import + all cinematic custom CSS
-    App.tsx                      — AuthProvider + WouterRouter + Sonner Toaster
-    types.ts                     — Pitch interface
-    lib/supabase.ts              — Supabase client (null if env vars missing)
-    context/AuthContext.tsx      — user/session state, signIn/signUp/signOut
-    hooks/usePitches.ts          — pitch data, realtime, updateLikes, addPitch, uploadImage
+    main.tsx
+    index.css                    — purple SaaS theme, all cinematic CSS
+    App.tsx                      — AuthProvider + BillingProvider + WouterRouter + Toaster
+    types.ts                     — Pitch, UserRole, SubscriptionTier, BillingProvider interfaces
+    lib/supabase.ts
+    context/
+      AuthContext.tsx             — user/session/userProfile, signIn/signUp(role)/signOut/updateRole
+      BillingContext.tsx          — tier, isSubscribed, subscribe(), cancelSubscription(), syncFromSupabase()
+    services/billing/
+      billingService.ts           — provider-agnostic billing facade
+      providers/
+        stripeProvider.ts
+        paystackProvider.ts
+        lemonSqueezyProvider.ts
+        paddleProvider.ts
+    hooks/usePitches.ts
     components/
-      Navbar.tsx                 — sticky glass nav, user menu, db chip
-      Hero.tsx                   — cinematic hero with CTA
-      PitchCard.tsx              — movie card with like button
-      FilterBar.tsx              — multi-genre filter + search + clear
-      PitchGrid.tsx              — responsive grid, skeletons, empty state
-      AuthModal.tsx              — sign in / sign up modal
-      CreatePitchModal.tsx       — submit pitch form with upload + URL fallback
+      auth/
+        ProtectedRoute.tsx        — auth + role guard
+      billing/
+        PricingCard.tsx           — animated tier card
+        InvestorPaywall.tsx       — upgrade prompt for investor-gated content
+      Navbar.tsx                  — role-aware nav (viewer/creator/investor)
+      Hero.tsx                    — marketplace headline + CTAs
+      PitchCard.tsx
+      FilterBar.tsx
+      PitchGrid.tsx
+      AuthModal.tsx               — role-selection signup (viewer/creator/investor)
+      CreatePitchModal.tsx
     pages/
-      Home.tsx                   — main page: view/filter/liked state
-      Dashboard.tsx              — user's pitches + account section
+      Home.tsx                    — browse + filter + like
+      Dashboard.tsx               — creator's pitches + account
+      Pricing.tsx                 — 4-tier pricing page (Free/Starter/Pro/Studio)
+      InvestorDashboard.tsx       — deal flow, watchlist, KPIs (gated by subscription)
 ```
+
+## Roles & Billing
+
+### User roles (stored in Supabase user_metadata, localStorage fallback)
+- `viewer` — browse only
+- `creator` — upload pitches, dashboard
+- `investor` — deal flow, watchlists, investor dashboard (requires subscription)
+
+### Subscription tiers (mock billing, no live payments)
+- `free` — $0/mo
+- `starter` — $9/mo (creator features)
+- `pro` — $19/mo (investor dashboard + deal flow)
+- `studio` — $49/mo (unlimited + analytics)
+
+### Billing architecture
+- `billingService` is the facade; components never call providers directly
+- Each provider implements: `subscribe()`, `cancel()`, `getSubscriptionStatus()`
+- Currently all providers simulate success (mock mode)
+- To wire live Stripe: implement real API calls inside `stripeProvider.ts`
+
+## Routes
+- `/` — Home (public)
+- `/dashboard` — Creator dashboard (auth required)
+- `/pricing` — Pricing page (auth recommended)
+- `/investor` — Investor dashboard (auth + subscription)
 
 ## Architecture decisions
 
-- `usePitches` uses a random channel name per mount to avoid "cannot add callbacks after subscribe" in React StrictMode
-- Liked pitch IDs stored in `localStorage` keyed by `pf-liked-{userId}` (per user)
-- Submitted pitch IDs stored in `localStorage` keyed by `pf-my-{userId}` for Dashboard display
-- Dashboard deduplicates pitches found by `user_id` column AND by localStorage IDs
-- `addPitch` gracefully falls back to insert without `user_id` if column doesn't exist (error code 42703)
-- Supabase client returns `null` if env vars aren't set; all callers check `if (!supabase)` before use
-
-## Product
-
-- Home: browse all pitches, filter by multiple genres, search, like (requires auth)
-- Trending: filtered view of trending-flagged pitches
-- Dashboard: user's submitted pitches + create new pitch
-- Auth: email + password sign up / sign in (Supabase Auth)
-- Create Pitch: title, genre, year, logline, poster upload OR URL
-- Realtime: like counts sync across tabs instantly
+- `usePitches` uses a random channel name per mount to avoid StrictMode double-subscribe
+- Role stored in Supabase `user_metadata.role`, read via `userProfile` from AuthContext
+- Subscription tier stored in `user_metadata.subscription_tier`
+- `BillingContext` syncs from Supabase on user mount, falls back to localStorage cache
+- `billingService.subscribe({ provider, tier })` is the only public billing API
+- Investor dashboard shows `InvestorPaywall` if `role === investor && !isSubscribed`
 
 ## Supabase required SQL
 
@@ -81,17 +114,9 @@ CREATE POLICY "Public insert" ON public.pitches FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public update" ON public.pitches FOR UPDATE USING (true);
 ```
 
-For image uploads: create a public Storage bucket named `posters` in Supabase → Storage.
-For realtime: enable replication on `pitches` in Supabase → Database → Replication.
-For auth: no extra SQL needed — Supabase Auth is enabled by default.
-
 ## Gotchas
 
-- `VITE_` prefix required on env vars — injected at build/dev time via `import.meta.env`
-- Realtime subscription uses a random channel name per mount to work with React StrictMode
-- Like/submit requires authentication — unauthenticated users see the auth modal instead
-- Dashboard shows pitches via `user_id` column (if added) + localStorage-tracked IDs as fallback
-
-## Pointers
-
-- See `pnpm-workspace` skill for workspace structure
+- `VITE_` prefix required on env vars
+- Realtime uses random channel names per mount
+- Like/submit requires auth; Investor Dashboard requires subscription
+- Billing is fully mocked — no real payments
