@@ -1,0 +1,420 @@
+🟣 REPLIT MASTER PROMPT — PITCHFLIX ULTIMATE PRODUCTION + FINTECH + AI MARKETPLACE SYSTEM
+⚠️ HARD RULES (NON-NEGOTIABLE)
+
+DO NOT:
+
+❌ Delete PitchFlix
+❌ Change UI structure or redesign layouts
+❌ Add new libraries or external frameworks
+❌ Break Supabase schema unless explicitly required
+❌ Introduce fake “demo mode”, “mock DB”, or placeholders
+❌ Use localStorage as a primary data source
+❌ Leave any “demo”, “sample”, or “test” labeling anywhere in UI
+
+ONLY:
+
+Fix wiring
+Fix Supabase persistence
+Fix routing
+Fix UI theme consistency
+Fix broken features
+Upgrade existing logic safely
+🧠 SYSTEM GOAL
+
+Convert PitchFlix from:
+
+feature-rich prototype
+
+into:
+
+🟣 FULL ENTERPRISE-GRADE CREATOR + INVESTOR + FINTECH + AI MARKETPLACE PLATFORM
+
+Powered entirely by Supabase as SINGLE SOURCE OF TRUTH.
+
+🚨 CRITICAL BRAND RULE
+❌ REMOVE ALL NON-PRODUCTION LANGUAGE
+
+DO NOT show:
+
+demo mode
+mock data
+sample pitches
+test environment
+live DB labels
+prototype indicators
+✅ RULE:
+
+App must feel like:
+
+REAL INVESTMENT-GRADE SaaS PLATFORM
+
+🎨 1. GLOBAL DESIGN SYSTEM ENFORCEMENT
+FORCE PURPLE DESIGN SYSTEM
+
+Primary:
+
+#7c3aed
+
+Dark:
+
+#5b21b6
+
+Accent:
+
+#a855f7
+REMOVE ALL:
+red
+blue
+indigo
+pink
+BUTTON RULE:
+bg-purple-600 hover:bg-purple-700
+👤 2. PROFILE + AVATAR SYSTEM
+DATABASE:
+
+profiles.avatar_url
+
+DEFAULT AVATAR:
+https://api.dicebear.com/7.x/avataaars/svg?seed=${username}
+REQUIRED IN:
+Navbar
+Dashboard
+Pitch cards
+Comments
+Settings
+🔐 3. AUTH + ONBOARDING FLOW
+
+Signup →
+Email verify →
+Onboarding →
+Role selection →
+Profile setup →
+Dashboard
+
+ROUTING RULE:
+creator → /dashboard
+investor → /investor
+viewer → /
+
+If role missing → FORCE /onboarding
+
+🧾 4. SETTINGS PAGE (FIXED)
+
+Must persist:
+
+await supabase.from("profiles").update({
+  username,
+  bio,
+  avatar_url
+}).eq("id", user.id);
+
+Fix:
+
+blank state
+missing fetch
+missing .single()
+broken save
+🎬 5. PITCH SUBMISSION (CRITICAL FIX)
+
+Must match schema exactly:
+
+await supabase.from("pitches").insert({
+  title,
+  genre,
+  description,
+  logline,
+  image_url,
+  video_url,
+  budget,
+  language,
+  country,
+  production_stage,
+  runtime_type,
+  tags,
+  user_id: user.id,
+  likes: 0,
+  views: 0,
+  trending_score: 0,
+  draft: false
+});
+
+Fix:
+
+missing user_id
+broken submit handler
+undefined fields
+🏷️ 6. TAG SYSTEM + SEARCH ENGINE
+
+Features:
+
+multi-tag system
+clickable tags
+tag filtering
+tag-based ranking
+
+Query:
+
+supabase
+  .from("pitches")
+  .select("*")
+  .contains("tags", [selectedTag]);
+📈 7. TRENDING ENGINE V2
+trending_score formula:
++1 per view
++2 per like
+recency boost
+tag relevance boost
+engagement velocity
+🔥 8. VIEWS SYSTEM
+
+On pitch open:
+
+supabase.from("pitch_views").insert({
+  pitch_id,
+  user_id
+});
+
+Then:
+
+increment views
+update trending_score
+💬 9. COMMENTS SYSTEM (SUPABASE ONLY)
+
+REPLACE localStorage COMPLETELY
+
+supabase.from("comments").insert({
+  user_id,
+  pitch_id,
+  content
+});
+
+Fetch:
+
+.eq("pitch_id", pitch_id)
+💼 10. INVESTOR ROLE ENFORCEMENT
+
+ONLY investors access:
+
+/investor
+watchlists
+deal flow
+
+Check:
+
+select role from profiles
+
+Redirect if unauthorized.
+
+💰 11. WALLET + PAYOUT SYSTEM (FINTECH CORE)
+INVESTORS:
+wallet balance
+funding wallet
+capital tracking
+CREATORS:
+payout account connection
+
+SUPPORTED PROVIDERS:
+
+Paystack
+Stripe
+Lemon Squeezy
+Moniepoint
+OPay
+Bank accounts
+DATABASE EXTENSION (LOGICAL ONLY)
+profiles.wallet_connected boolean
+profiles.payout_provider text
+profiles.payout_account text
+profiles.investor_wallet_balance numeric
+profiles.creator_earnings numeric
+UI:
+INVESTOR:
+
+💰 Available Capital
+→ Connect Wallet
+
+CREATOR:
+
+💳 Earnings Wallet
+→ Connect Payout Method
+
+RULE:
+
+NO actual payment processing yet (UI + DB only)
+
+💳 12. STRIPE / PAYSTACK INTEGRATION (READY LAYER)
+
+Prepare system for:
+
+deposits
+investments
+payouts
+platform fees
+
+BUT DO NOT CONNECT LIVE YET
+
+🏦 13. INVESTOR ESCROW SYSTEM (ARCHITECTURE ONLY)
+
+Funds flow:
+
+Investor → Escrow → Milestone approval → Creator payout
+
+Must support:
+
+partial releases
+milestone-based unlocking
+refund logic (future)
+🔁 14. REVENUE SHARING ENGINE
+
+Automated splits:
+
+Creator %
+Investor %
+Platform fee %
+
+Triggered on:
+
+funding success
+milestone approval
+payout event
+🤖 15. AI PITCH SCORING SYSTEM
+
+Each pitch gets:
+
+clarity score
+originality score
+market potential score
+engagement score
+risk score
+
+Output:
+
+Pitch Strength Score: 82/100
+Risk Level: Medium
+Funding Probability: High
+🤝 16. INVESTOR DEAL MARKETPLACE AUTOMATION
+
+System must:
+
+auto-list pitches
+rank by AI score
+match investor preferences
+update feed in real-time
+
+Investor feed = dynamic marketplace engine
+
+👥 17. STRICT ROLE SEPARATION
+🧑‍🎬 Creators:
+submit pitches
+track funding
+manage milestones
+receive payouts
+💼 Investors:
+browse deals
+invest capital
+manage escrow
+track ROI
+🎯 18. INVESTOR DASHBOARD FEATURES
+portfolio overview
+deal flow feed
+escrow wallet
+ROI analytics
+watchlist
+notifications
+auto-invest rules (future-ready)
+🎬 19. CREATOR DASHBOARD FEATURES
+pitch studio
+funding tracker
+investor insights
+milestone system
+revenue tracking
+AI suggestions
+messaging system
+media uploads
+💡 20. ADVANCED AI + MARKETPLACE LAYER
+AI SYSTEMS:
+Pitch Strength Score
+Funding success prediction
+Investor matching engine
+Fraud detection
+Risk scoring
+MARKETPLACE FEATURES:
+trending pitches
+category discovery
+early access deals
+investor leaderboard
+limited-time deals
+🔐 21. TRUST & SAFETY SYSTEM
+escrow transparency
+milestone verification
+dispute resolution flow
+verified users system
+fraud detection layer
+📊 22. ANALYTICS SYSTEM
+
+Show:
+
+profile views
+pitch engagement
+trending rank
+
+Example:
+
+“Your pitch is in top 5% of Sci-Fi this week”
+
+🚀 23. ROUTING CHECK (MUST EXIST)
+/feed
+/dashboard
+/onboarding
+/settings
+/investor
+/pricing
+/pitch/:id
+/create
+💳 24. PRICING ALIGNMENT
+Plan	Role
+Free	viewer
+Starter	creator
+Pro Investor	investor
+Studio	creator+advanced
+
+ALL buttons → onboarding (NO fake billing)
+
+🧠 25. FRONTEND AUDIT CHECKLIST
+
+Ensure:
+
+✔ Supabase fully wired
+✔ No localStorage dependency
+✔ No undefined user errors
+✔ All forms connected
+✔ Avatar system everywhere
+✔ Pitch submission works
+✔ Settings persists
+✔ Investor routes protected
+✔ Wallet UI exists
+✔ AI scoring UI exists
+✔ Trending system active
+
+🔥 FINAL SYSTEM RESULT
+
+After execution:
+
+✔ Full SaaS marketplace
+✔ Creator + Investor economy
+✔ Escrow + revenue sharing architecture
+✔ AI-powered pitch intelligence
+✔ Wallet + payout infrastructure
+✔ Real Supabase backend system
+✔ Production-grade UI consistency
+✔ No demo mode anywhere
+✔ Fully scalable investment platform
+
+🧠 FINAL STATEMENT
+
+PitchFlix is now:
+
+🟣 A full venture-grade creator economy + investment marketplace + AI SaaS platform
+NOT a demo
+NOT a prototype
+NOT a mock system
