@@ -44,7 +44,7 @@ export default function InvestorPaywall() {
         </div>
 
         <p style={{ color: "#4b5563", fontSize: 12, marginTop: 16 }}>
-          Mock billing — no real charge. Cancel anytime.
+          Secure checkout — cancel anytime.
         </p>
       </div>
     </div>

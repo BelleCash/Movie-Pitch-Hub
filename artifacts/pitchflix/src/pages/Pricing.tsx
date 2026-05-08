@@ -13,23 +13,23 @@ const PLANS: {
   {
     tier: "free", name: "Free", price: 0,
     description: "Start exploring the marketplace.",
-    features: ["Browse all pitches", "Basic likes", "Public profiles"],
+    features: ["Browse all pitches", "Like pitches", "Public profiles", "Tag search"],
   },
   {
     tier: "starter", name: "Starter", price: 9,
     description: "For creators ready to pitch.",
-    features: ["Creator profile", "Upload pitches", "Basic analytics", "Genre filtering"],
+    features: ["Creator profile", "Upload pitches", "AI pitch scoring", "Basic analytics", "Genre filtering", "Payout account setup"],
   },
   {
     tier: "pro", name: "Pro Investor", price: 19,
-    description: "Find and track the next big film.",
-    features: ["Investor dashboard", "Deal pipeline", "Watchlists", "Trending alerts", "Real-time data"],
+    description: "Find and fund the next big film.",
+    features: ["Investor dashboard", "Deal flow feed", "Watchlists", "Investor voting", "AI deal scoring", "Trending alerts", "Capital wallet", "Investor comments"],
     recommended: true,
   },
   {
     tier: "studio", name: "Studio", price: 49,
-    description: "Full-platform power for teams.",
-    features: ["Everything in Pro", "Unlimited uploads", "Advanced analytics", "Featured placement", "Team access"],
+    description: "Full-platform power for studios and teams.",
+    features: ["Everything in Pro", "Unlimited pitch uploads", "Advanced analytics", "Featured placement", "Team access", "Priority support", "Early deal access"],
   },
 ];
 
@@ -45,7 +45,7 @@ export default function Pricing() {
     setLoading(tier);
     try {
       await subscribe(tier);
-      toast.success(`Upgraded to ${tier}!`, { description: "Your plan is now active 🚀" });
+      toast.success(`Plan activated!`, { description: `You're now on the ${tier} plan 🚀` });
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
@@ -90,11 +90,16 @@ export default function Pricing() {
           ))}
         </div>
 
-        <div style={{ marginTop: 60, textAlign: "center" }}>
-          <p style={{ color: "#4b5563", fontSize: 13 }}>
-            All plans are in mock mode — no real charges.{" "}
-            <span style={{ color: "#7c3aed" }}>Built for demo and investor review.</span>
-          </p>
+        <div style={{ marginTop: 60, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#4b5563", fontSize: 13 }}>
+            <span>🔒</span> Secure checkout
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#4b5563", fontSize: 13 }}>
+            <span>↩️</span> Cancel anytime
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#4b5563", fontSize: 13 }}>
+            <span>⚡</span> Instant activation
+          </div>
         </div>
       </div>
     </div>

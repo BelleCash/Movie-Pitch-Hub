@@ -10,7 +10,7 @@ import AuthModal from "@/components/AuthModal";
 import CreatePitchModal from "@/components/CreatePitchModal";
 
 export default function Home() {
-  const { pitches, isLive, loading, updateLikes } = usePitches();
+  const { pitches, loading, updateLikes } = usePitches();
   const { user } = useAuth();
 
   const [view, setView] = useState<"home" | "trending">("home");
@@ -19,46 +19,47 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const likedKey = `pf-liked-${user?.id ?? "guest"}`;
-  const [liked, setLiked] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem(likedKey) ?? "[]")); }
-    catch { return new Set(); }
-  });
+  const [liked, setLiked] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    try { return setLiked(new Set(JSON.parse(localStorage.getItem(likedKey) ?? "[]"))); }
+    const key = `pf-liked-${user?.id ?? "guest"}`;
+    try { setLiked(new Set(JSON.parse(localStorage.getItem(key) ?? "[]"))); }
     catch { setLiked(new Set()); }
-  }, [likedKey]);
+  }, [user?.id]);
 
   const toggleGenre = (genre: string) => {
     if (genre === "All") { setSelectedGenres(new Set()); return; }
     setSelectedGenres((prev) => {
       const next = new Set(prev);
-      if (next.has(genre)) next.delete(genre); else next.add(genre);
+      next.has(genre) ? next.delete(genre) : next.add(genre);
       return next;
     });
   };
-
-  const clearFilters = () => { setSelectedGenres(new Set()); setSearch(""); };
 
   const filtered = useMemo(() => {
     let list = view === "trending" ? pitches.filter((p) => p.trending) : [...pitches];
     if (selectedGenres.size > 0) list = list.filter((p) => selectedGenres.has(p.genre));
     const q = search.toLowerCase().trim();
-    if (q) list = list.filter((p) => p.title.toLowerCase().includes(q) || p.genre.toLowerCase().includes(q) || p.logline.toLowerCase().includes(q));
+    if (q) list = list.filter((p) =>
+      p.title.toLowerCase().includes(q) ||
+      p.genre.toLowerCase().includes(q) ||
+      p.logline.toLowerCase().includes(q) ||
+      (p.tags ?? []).some((t) => t.toLowerCase().includes(q))
+    );
     return list;
   }, [pitches, view, selectedGenres, search]);
 
   const handleLike = useCallback((id: string, currentLikes: number) => {
     if (!user) { setAuthOpen(true); return; }
     const isLiked = liked.has(id);
-    const newLiked = new Set(liked);
-    if (isLiked) newLiked.delete(id); else newLiked.add(id);
-    setLiked(newLiked);
-    try { localStorage.setItem(likedKey, JSON.stringify([...newLiked])); } catch {}
+    const next = new Set(liked);
+    isLiked ? next.delete(id) : next.add(id);
+    setLiked(next);
+    const key = `pf-liked-${user.id}`;
+    try { localStorage.setItem(key, JSON.stringify([...next])); } catch {}
     updateLikes(id, Math.max(0, currentLikes + (isLiked ? -1 : 1)));
     if (!isLiked) toast.success("Liked!", { duration: 1500 });
-  }, [user, liked, likedKey, updateLikes]);
+  }, [user, liked, updateLikes]);
 
   const handleOpenCreate = () => {
     if (!user) { setAuthOpen(true); return; }
@@ -73,7 +74,6 @@ export default function Home() {
   return (
     <div style={{ background: "#0b0b0f", minHeight: "100vh" }}>
       <Navbar
-        isLive={isLive}
         view={view}
         onSetView={setViewAndScroll}
         search={search}
@@ -97,7 +97,7 @@ export default function Home() {
           sectionTitle={view === "trending" ? "Trending Pitches" : "All Pitches"}
           onToggleGenre={toggleGenre}
           onSearchChange={setSearch}
-          onClear={clearFilters}
+          onClear={() => { setSelectedGenres(new Set()); setSearch(""); }}
         />
         <PitchGrid pitches={filtered} loading={loading} liked={liked} onLike={handleLike} />
       </main>
@@ -113,22 +113,22 @@ export default function Home() {
           Trending
         </button>
         <button onClick={handleOpenCreate}
-          style={{ background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", border: "none", width: 52, height: 52, borderRadius: "50%", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 20px rgba(124,58,237,0.42)", marginBottom: 4, flexShrink: 0, transition: "transform 0.2s" }}
+          style={{ background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", border: "none", width: 52, height: 52, borderRadius: "50%", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 20px rgba(124,58,237,0.45)", marginBottom: 4, flexShrink: 0, transition: "transform 0.2s" }}
           onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.08)")}
           onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
-        <button className="bn-btn" onClick={() => user ? null : setAuthOpen(true)}>
+        <button className="bn-btn" onClick={() => !user && setAuthOpen(true)}>
           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           Search
         </button>
-        <button className="bn-btn" onClick={() => user ? null : setAuthOpen(true)}>
+        <button className="bn-btn" onClick={() => !user && setAuthOpen(true)}>
           <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           {user ? user.email?.[0]?.toUpperCase() : "Sign In"}
         </button>
       </nav>
 
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => { if (createOpen) {} }} />
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => {}} />
       <CreatePitchModal isOpen={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
   );

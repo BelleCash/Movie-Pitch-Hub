@@ -13,10 +13,14 @@ export interface Pitch {
   tags?: string[];
   user_id?: string;
   created_at?: string;
+  views?: number;
+  comment_count?: number;
+  trending_score?: number;
 }
 
 export type UserRole = "viewer" | "creator" | "investor";
 export type SubscriptionTier = "free" | "starter" | "pro" | "studio";
+export type PayoutProvider = "paystack" | "stripe" | "lemon_squeezy" | "opay" | "moniepoint" | "bank_account" | "metamask";
 
 export interface UserProfile {
   id: string;
@@ -26,16 +30,23 @@ export interface UserProfile {
   isSubscribed: boolean;
   username: string;
   bio: string;
+  avatarUrl?: string;
   onboardingComplete: boolean;
+  walletConnected?: boolean;
+  payoutProvider?: PayoutProvider | null;
+  payoutAccount?: string;
+  investorWalletBalance?: number;
+  creatorEarnings?: number;
 }
 
 export interface Comment {
   id: string;
-  pitchId: string;
-  authorEmail: string;
-  authorName: string;
-  text: string;
-  timestamp: number;
+  pitch_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  author_name?: string;
+  author_avatar?: string;
 }
 
 export interface SubscriptionStatus {

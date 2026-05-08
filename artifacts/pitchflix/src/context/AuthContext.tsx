@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import type { UserProfile, UserRole } from "@/types";
+import type { UserProfile, UserRole, PayoutProvider } from "@/types";
 
 interface OnboardingData { username: string; bio: string; role: UserRole }
 
@@ -15,36 +15,14 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateRole: (role: UserRole) => Promise<void>;
   completeOnboarding: (data: OnboardingData) => Promise<void>;
-}
-
-const LS_PROFILE_KEY = "pf-profile";
-const LS_REDIRECT_KEY = "post_signup_redirect";
-
-function readCachedProfile(): Partial<UserProfile> {
-  try { return JSON.parse(localStorage.getItem(LS_PROFILE_KEY) ?? "{}"); }
-  catch { return {}; }
-}
-
-function buildProfile(user: User): UserProfile {
-  const meta = user.user_metadata ?? {};
-  const cached = readCachedProfile();
-  return {
-    id: user.id,
-    email: user.email ?? "",
-    role: (meta.role ?? cached.role ?? "viewer") as UserRole,
-    subscriptionTier: (meta.subscription_tier ?? cached.subscriptionTier ?? "free") as UserProfile["subscriptionTier"],
-    isSubscribed: (meta.subscription_tier ?? "free") !== "free",
-    username: (meta.username ?? cached.username ?? "") as string,
-    bio: (meta.bio ?? cached.bio ?? "") as string,
-    onboardingComplete: meta.onboarding_complete === true,
-  };
-}
-
-function cacheProfile(profile: UserProfile) {
-  try { localStorage.setItem(LS_PROFILE_KEY, JSON.stringify(profile)); } catch {}
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+function avatarUrl(seed: string) {
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=7c3aed&backgroundType=solid`;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -52,27 +30,80 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const hydrateProfile = (u: User | null) => {
+  const fetchProfile = async (u: User): Promise<UserProfile> => {
+    const meta = u.user_metadata ?? {};
+
+    if (supabase) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", u.id)
+        .single();
+
+      if (data) {
+        return {
+          id: u.id,
+          email: u.email ?? "",
+          role: (data.role ?? meta.role ?? "viewer") as UserRole,
+          subscriptionTier: (data.subscription_tier ?? meta.subscription_tier ?? "free") as UserProfile["subscriptionTier"],
+          isSubscribed: (data.subscription_tier ?? "free") !== "free",
+          username: data.username ?? meta.username ?? "",
+          bio: data.bio ?? meta.bio ?? "",
+          avatarUrl: data.avatar_url ?? avatarUrl(data.username || u.email?.split("@")[0] || u.id),
+          onboardingComplete: data.onboarding_complete ?? meta.onboarding_complete ?? false,
+          walletConnected: data.wallet_connected ?? false,
+          payoutProvider: (data.payout_provider ?? null) as PayoutProvider | null,
+          payoutAccount: data.payout_account ?? "",
+          investorWalletBalance: data.investor_wallet_balance ?? 0,
+          creatorEarnings: data.creator_earnings ?? 0,
+        };
+      }
+    }
+
+    const username = meta.username ?? u.email?.split("@")[0] ?? "";
+    return {
+      id: u.id,
+      email: u.email ?? "",
+      role: (meta.role ?? "viewer") as UserRole,
+      subscriptionTier: (meta.subscription_tier ?? "free") as UserProfile["subscriptionTier"],
+      isSubscribed: (meta.subscription_tier ?? "free") !== "free",
+      username,
+      bio: meta.bio ?? "",
+      avatarUrl: avatarUrl(username || u.id),
+      onboardingComplete: meta.onboarding_complete === true,
+      walletConnected: false,
+      payoutProvider: null,
+      payoutAccount: "",
+      investorWalletBalance: 0,
+      creatorEarnings: 0,
+    };
+  };
+
+  const hydrateProfile = async (u: User | null) => {
     if (!u) { setUserProfile(null); return; }
-    const profile = buildProfile(u);
+    const profile = await fetchProfile(u);
     setUserProfile(profile);
-    cacheProfile(profile);
+  };
+
+  const refreshProfile = async () => {
+    if (!user) return;
+    await hydrateProfile(user);
   };
 
   useEffect(() => {
     if (!supabase) { setAuthLoading(false); return; }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      hydrateProfile(session?.user ?? null);
+      await hydrateProfile(session?.user ?? null);
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      hydrateProfile(session?.user ?? null);
+      await hydrateProfile(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -86,12 +117,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, role: UserRole = "viewer") => {
     if (!supabase) return { error: "Supabase not configured" };
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: { data: { role, subscription_tier: "free", onboarding_complete: false } },
     });
-    if (!error) {
-      try { localStorage.setItem(LS_REDIRECT_KEY, "onboarding"); } catch {}
+    if (!error && data.user) {
+      try {
+        await supabase.from("profiles").upsert({
+          id: data.user.id,
+          email,
+          role,
+          subscription_tier: "free",
+          onboarding_complete: false,
+          avatar_url: avatarUrl(email.split("@")[0]),
+        }, { onConflict: "id" });
+      } catch {}
+      try { localStorage.setItem("post_signup_redirect", "onboarding"); } catch {}
     }
     return { error: error?.message ?? null };
   };
@@ -99,36 +140,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
-    try { localStorage.removeItem(LS_PROFILE_KEY); } catch {}
     setUserProfile(null);
   };
 
   const updateRole = async (role: UserRole) => {
     if (!supabase || !user) return;
     await supabase.auth.updateUser({ data: { role } });
-    setUserProfile((p) => {
-      if (!p) return p;
-      const next = { ...p, role };
-      cacheProfile(next);
-      return next;
-    });
+    if (supabase) await supabase.from("profiles").upsert({ id: user.id, role }, { onConflict: "id" });
+    setUserProfile((p) => p ? { ...p, role } : p);
   };
 
   const completeOnboarding = async ({ username, bio, role }: OnboardingData) => {
-    if (!supabase) return;
-    await supabase.auth.updateUser({
-      data: { username, bio, role, onboarding_complete: true },
-    });
-    setUserProfile((p) => {
-      if (!p) return p;
-      const next = { ...p, username, bio, role, onboardingComplete: true };
-      cacheProfile(next);
-      return next;
-    });
+    if (!supabase || !user) return;
+    const avatar = avatarUrl(username || user.email?.split("@")[0] || user.id);
+    await supabase.auth.updateUser({ data: { username, bio, role, onboarding_complete: true } });
+    await supabase.from("profiles").upsert({
+      id: user.id,
+      email: user.email,
+      username,
+      bio,
+      role,
+      avatar_url: avatar,
+      onboarding_complete: true,
+    }, { onConflict: "id" });
+    setUserProfile((p) => p ? { ...p, username, bio, role, avatarUrl: avatar, onboardingComplete: true } : p);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, userProfile, authLoading, signIn, signUp, signOut, updateRole, completeOnboarding }}>
+    <AuthContext.Provider value={{ user, session, userProfile, authLoading, signIn, signUp, signOut, updateRole, completeOnboarding, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

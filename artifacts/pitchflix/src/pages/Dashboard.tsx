@@ -3,17 +3,17 @@ import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { usePitches } from "@/hooks/usePitches";
 import { useAuth } from "@/context/AuthContext";
+import { scorePitch } from "@/services/pitchScoring";
 import PitchGrid from "@/components/PitchGrid";
 import CreatePitchModal from "@/components/CreatePitchModal";
 
-function avatarUrl(username?: string, email?: string) {
-  const seed = encodeURIComponent(username || email?.split("@")[0] || "user");
-  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=7c3aed&backgroundType=solid`;
+function avatarUrl(seed: string) {
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=7c3aed&backgroundType=solid`;
 }
 
 export default function Dashboard() {
   const { user, userProfile, signOut, authLoading } = useAuth();
-  const { pitches, isLive, loading, updateLikes } = usePitches();
+  const { pitches, loading, updateLikes } = usePitches();
   const [, navigate] = useLocation();
   const [createOpen, setCreateOpen] = useState(false);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
@@ -37,31 +37,33 @@ export default function Dashboard() {
 
   const myPitches = useMemo(() => {
     if (!user) return [];
-    const byUserId = pitches.filter((p) => p.user_id === user.id);
+    const byUserId  = pitches.filter((p) => p.user_id === user.id);
     const byLocalIds = pitches.filter((p) => myIds.has(p.id));
     const seen = new Set<string>();
-    return [...byUserId, ...byLocalIds].filter((p) => {
-      if (seen.has(p.id)) return false;
-      seen.add(p.id); return true;
-    });
+    return [...byUserId, ...byLocalIds].filter((p) => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
   }, [pitches, user, myIds]);
 
-  const totalLikes = useMemo(() => myPitches.reduce((s, p) => s + p.likes, 0), [myPitches]);
+  const totalLikes  = useMemo(() => myPitches.reduce((s, p) => s + p.likes, 0), [myPitches]);
+  const totalViews  = useMemo(() => myPitches.reduce((s, p) => s + (p.views ?? 0), 0), [myPitches]);
+  const avgScore    = useMemo(() => {
+    if (!myPitches.length) return 0;
+    return Math.round(myPitches.reduce((s, p) => s + scorePitch(p).overall, 0) / myPitches.length);
+  }, [myPitches]);
 
   const activationScore = useMemo(() => {
-    let score = 0;
-    if (userProfile?.username) score += 30;
-    if (myPitches.length > 0) score += 50;
-    if (totalLikes > 0) score += 20;
-    return Math.min(100, score);
+    let s = 0;
+    if (userProfile?.username) s += 30;
+    if (myPitches.length > 0)  s += 50;
+    if (totalLikes > 0)        s += 20;
+    return Math.min(100, s);
   }, [userProfile, myPitches, totalLikes]);
 
   const handleLike = useCallback((id: string, currentLikes: number) => {
     const isLiked = liked.has(id);
-    const newLiked = new Set(liked);
-    if (isLiked) newLiked.delete(id); else newLiked.add(id);
-    setLiked(newLiked);
-    try { localStorage.setItem(likedKey, JSON.stringify([...newLiked])); } catch {}
+    const next = new Set(liked);
+    isLiked ? next.delete(id) : next.add(id);
+    setLiked(next);
+    try { localStorage.setItem(likedKey, JSON.stringify([...next])); } catch {}
     updateLikes(id, Math.max(0, currentLikes + (isLiked ? -1 : 1)));
   }, [liked, likedKey, updateLikes]);
 
@@ -83,12 +85,13 @@ export default function Dashboard() {
       </div>
     );
   }
-
   if (!user) return null;
 
   const displayName = userProfile?.username || user.email?.split("@")[0] || "Creator";
-  const initial = displayName[0]?.toUpperCase() ?? "?";
-  const avatar = avatarUrl(userProfile?.username, user.email);
+  const avatar      = userProfile?.avatarUrl ?? avatarUrl(displayName);
+  const isCreator   = userProfile?.role === "creator";
+  const walletConnected = userProfile?.walletConnected ?? false;
+  const creatorEarnings = userProfile?.creatorEarnings ?? 0;
 
   return (
     <div style={{ background: "#0b0b0f", minHeight: "100vh" }}>
@@ -98,14 +101,10 @@ export default function Dashboard() {
             <div style={{ width: 33, height: 33, background: "#7c3aed", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>🎬</div>
             <span style={{ fontSize: 21, fontWeight: 900, letterSpacing: "-0.04em", color: "#fff" }}>Pitch<span style={{ color: "#8b5cf6" }}>Flix</span></span>
           </a>
-          <h1 style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>Creator Dashboard</h1>
+          <h1 style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>Creator Studio</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className={`db-chip ${isLive ? "live" : "demo"}`}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: isLive ? "#4ade80" : "#fbbf24", display: "inline-block" }} />
-              {isLive ? "Live DB" : "Demo"}
-            </div>
-            <img src={avatar} alt={initial} style={{ width: 36, height: 36, borderRadius: "50%", background: "#7c3aed", objectFit: "cover", border: "2px solid rgba(124,58,237,0.4)" }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <img src={avatar} alt={displayName} style={{ width: 36, height: 36, borderRadius: "50%", background: "#7c3aed", objectFit: "cover", border: "2px solid rgba(124,58,237,0.4)" }}
+              onError={(e) => { (e.target as HTMLImageElement).src = avatarUrl(displayName); }} />
             <a href="/settings" style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 9, padding: "8px 14px", color: "#e2e8f0", textDecoration: "none", fontSize: 13, fontWeight: 500, transition: "all 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.1)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}>
@@ -115,16 +114,15 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <main style={{ maxWidth: 1380, margin: "0 auto", padding: "48px 28px 120px" }}>
+      <main style={{ maxWidth: 1380, margin: "0 auto", padding: "52px 28px 120px" }}>
+
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 44 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <img src={avatar} alt={initial} style={{ width: 72, height: 72, borderRadius: "50%", background: "#7c3aed", objectFit: "cover", border: "3px solid rgba(124,58,237,0.4)", flexShrink: 0 }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <img src={avatar} alt={displayName} style={{ width: 72, height: 72, borderRadius: "50%", background: "#7c3aed", objectFit: "cover", border: "3px solid rgba(124,58,237,0.4)", flexShrink: 0 }}
+              onError={(e) => { (e.target as HTMLImageElement).src = avatarUrl(displayName); }} />
             <div>
               <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 4 }}>Welcome back,</p>
-              <h2 style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em" }}>
-                {displayName}<span style={{ color: "#8b5cf6" }}>.</span>
-              </h2>
+              <h2 style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em" }}>{displayName}<span style={{ color: "#8b5cf6" }}>.</span></h2>
               {userProfile?.bio && <p style={{ color: "#6b7280", fontSize: 13, marginTop: 5, maxWidth: 320 }}>{userProfile.bio}</p>}
             </div>
           </div>
@@ -135,23 +133,60 @@ export default function Dashboard() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 44 }}>
-          <StatCard icon="🎬" label="Pitches" value={String(myPitches.length)} sub="submitted" />
-          <StatCard icon="❤️" label="Total Likes" value={String(totalLikes)} sub="across all pitches" />
-          <StatCard icon="🔥" label="Trending" value={String(myPitches.filter((p) => p.trending).length)} sub="currently hot" />
+          <StatCard icon="🎬" label="Pitches"    value={String(myPitches.length)}      sub="submitted" />
+          <StatCard icon="❤️" label="Total Likes" value={String(totalLikes)}             sub="across all pitches" />
+          <StatCard icon="👁" label="Total Views" value={String(totalViews)}             sub="pitch page visits" />
+          <StatCard icon="🔥" label="Trending"   value={String(myPitches.filter((p) => p.trending).length)} sub="currently hot" />
+          <StatCard icon="🤖" label="Avg AI Score" value={myPitches.length ? `${avgScore}/100` : "—"}   sub="pitch strength" />
+
           <div style={{ background: "#12121a", border: "1px solid rgba(124,58,237,0.15)", borderRadius: 18, padding: "20px 22px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em" }}>Activation Score</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em" }}>Activation</span>
               <span style={{ fontSize: 22 }}>⚡</span>
             </div>
-            <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 10 }}>{activationScore}<span style={{ fontSize: 14, color: "#6b7280", fontWeight: 500 }}>/100</span></div>
+            <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 10 }}>
+              {activationScore}<span style={{ fontSize: 12, color: "#6b7280", fontWeight: 500 }}>/100</span>
+            </div>
             <div style={{ height: 6, background: "rgba(255,255,255,0.07)", borderRadius: 3, overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${activationScore}%`, background: "linear-gradient(90deg,#7c3aed,#a855f7)", borderRadius: 3, transition: "width 1s ease-out" }} />
             </div>
             <div style={{ fontSize: 10, color: "#4b5563", marginTop: 6 }}>
-              {activationScore < 30 ? "Add a username to get started" : activationScore < 80 ? "Submit your first pitch to boost" : "You're fully activated! 🚀"}
+              {activationScore < 30 ? "Set a username to start" : activationScore < 80 ? "Submit a pitch to boost" : "Fully activated 🚀"}
             </div>
           </div>
         </div>
+
+        {isCreator && (
+          <div style={{ background: "#12121a", border: "1px solid rgba(124,58,237,0.15)", borderRadius: 20, padding: 24, marginBottom: 44 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 18 }}>💳</span>
+                  <h3 style={{ fontSize: 15, fontWeight: 800 }}>Earnings Wallet</h3>
+                  {walletConnected && <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(74,222,128,0.12)", color: "#4ade80", padding: "2px 8px", borderRadius: 4 }}>CONNECTED</span>}
+                </div>
+                <p style={{ color: "#6b7280", fontSize: 13 }}>Receive creator earnings from funded pitches</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 2 }}>Creator Earnings</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: walletConnected ? "#4ade80" : "#4b5563" }}>
+                    {walletConnected ? `$${creatorEarnings.toLocaleString()}` : "—"}
+                  </div>
+                </div>
+                {!walletConnected ? (
+                  <a href="/settings" className="btn-purple" style={{ textDecoration: "none", padding: "10px 20px", fontSize: 13, borderRadius: 10 }}>
+                    💳 Connect Payout Method
+                  </a>
+                ) : (
+                  <a href="/settings" className="btn-ghost" style={{ textDecoration: "none", padding: "10px 18px", fontSize: 13, borderRadius: 10 }}>
+                    Manage Payout
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {activationScore < 100 && (
           <div style={{ background: "rgba(124,58,237,0.07)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 16, padding: "16px 20px", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
@@ -160,12 +195,12 @@ export default function Dashboard() {
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>Complete your profile for maximum visibility</div>
                 <div style={{ fontSize: 12, color: "#6b7280" }}>
-                  {!userProfile?.username ? "→ Set a username (+30 pts)" : myPitches.length === 0 ? "→ Submit your first pitch (+50 pts)" : "→ Get your first likes (+20 pts)"}
+                  {!userProfile?.username ? "→ Set a username in Settings (+30 pts)" : myPitches.length === 0 ? "→ Submit your first pitch (+50 pts)" : "→ Share pitches to earn likes (+20 pts)"}
                 </div>
               </div>
             </div>
             {!userProfile?.username && (
-              <a href="/settings" className="btn-purple" style={{ textDecoration: "none", padding: "8px 18px", fontSize: 12, borderRadius: 9 }}>Complete Profile</a>
+              <a href="/settings" className="btn-purple" style={{ textDecoration: "none", padding: "8px 18px", fontSize: 12, borderRadius: 9 }}>Go to Settings</a>
             )}
           </div>
         )}
@@ -174,12 +209,8 @@ export default function Dashboard() {
           <div style={{ textAlign: "center", padding: "80px 0" }}>
             <div style={{ fontSize: 64, marginBottom: 20 }}>🎬</div>
             <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 12 }}>Your story starts here</h3>
-            <p style={{ color: "#6b7280", fontSize: 15, marginBottom: 30, maxWidth: 400, margin: "0 auto 30px" }}>
-              Submit your first pitch and share it with investors around the world.
-            </p>
-            <button className="btn-purple" onClick={() => setCreateOpen(true)}>
-              🎬 Submit Your First Pitch
-            </button>
+            <p style={{ color: "#6b7280", fontSize: 15, marginBottom: 30, maxWidth: 400, margin: "0 auto 30px" }}>Submit your first pitch and connect with investors around the world.</p>
+            <button className="btn-purple" onClick={() => setCreateOpen(true)}>🎬 Submit Your First Pitch</button>
           </div>
         ) : (
           <>
@@ -192,8 +223,8 @@ export default function Dashboard() {
           <h3 style={{ fontSize: 11, fontWeight: 700, color: "#4b5563", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 20 }}>Account</h3>
           <div style={{ background: "#12121a", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 16, padding: 24, maxWidth: 480 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-              <img src={avatar} alt={initial} style={{ width: 48, height: 48, borderRadius: "50%", background: "#7c3aed", border: "2px solid rgba(124,58,237,0.3)", objectFit: "cover" }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img src={avatar} alt={displayName} style={{ width: 48, height: 48, borderRadius: "50%", background: "#7c3aed", border: "2px solid rgba(124,58,237,0.3)", objectFit: "cover" }}
+                onError={(e) => { (e.target as HTMLImageElement).src = avatarUrl(displayName); }} />
               <div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{displayName}</div>
                 <div style={{ color: "#6b7280", fontSize: 13 }}>{user.email}</div>
@@ -230,7 +261,7 @@ function StatCard({ icon, label, value, sub }: { icon: string; label: string; va
         <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</span>
         <span style={{ fontSize: 22 }}>{icon}</span>
       </div>
-      <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 4 }}>{value}</div>
       <div style={{ fontSize: 12, color: "#4b5563" }}>{sub}</div>
     </div>
   );
