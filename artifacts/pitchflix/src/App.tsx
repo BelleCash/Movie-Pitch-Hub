@@ -10,16 +10,7 @@ import InvestorDashboard from "@/pages/InvestorDashboard";
 import Onboarding from "@/pages/Onboarding";
 import Settings from "@/pages/Settings";
 import PitchDetail from "@/pages/PitchDetail";
-
-function NotFound() {
-  return (
-    <div style={{ minHeight: "100vh", background: "#0b0b0f", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <div style={{ fontSize: 64 }}>🎬</div>
-      <h1 style={{ fontSize: 24, fontWeight: 800 }}>Page not found</h1>
-      <a href="/" style={{ color: "#8b5cf6", fontSize: 14, fontWeight: 600 }}>← Back to PitchFlix</a>
-    </div>
-  );
-}
+import NotFound from "@/pages/not-found";
 
 function AppRoutes() {
   const { user, userProfile, authLoading } = useAuth();

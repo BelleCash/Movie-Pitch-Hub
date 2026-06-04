@@ -3,12 +3,16 @@ import { stripeProvider } from "./providers/stripeProvider";
 import { paystackProvider } from "./providers/paystackProvider";
 import { lemonSqueezyProvider } from "./providers/lemonSqueezyProvider";
 import { paddleProvider } from "./providers/paddleProvider";
+import { opayProvider } from "./providers/opayProvider";
+import { moniepointProvider } from "./providers/moniepointProvider";
 
 const PROVIDERS: Record<string, BillingProvider> = {
   stripe: stripeProvider,
   paystack: paystackProvider,
   lemonsqueezy: lemonSqueezyProvider,
   paddle: paddleProvider,
+  opay: opayProvider,
+  moniepoint: moniepointProvider,
 };
 
 const DEFAULT_PROVIDER = "stripe";

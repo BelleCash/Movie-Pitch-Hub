@@ -25,9 +25,14 @@ export default function Onboarding() {
   const [anim, setAnim] = useState<"in" | "out">("in");
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/");
-    if (!authLoading && user?.user_metadata?.onboarding_complete) navigate("/dashboard");
-  }, [user, authLoading]);
+    if (authLoading) return;
+    if (!user) { navigate("/"); return; }
+    if (userProfile?.onboardingComplete) {
+      if (userProfile.role === "investor") navigate("/investor");
+      else if (userProfile.role === "creator") navigate("/dashboard");
+      else navigate("/");
+    }
+  }, [user, authLoading, userProfile?.onboardingComplete, userProfile?.role]);
 
   const goStep = (next: Step) => {
     setAnim("out");

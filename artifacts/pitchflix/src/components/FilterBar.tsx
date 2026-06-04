@@ -50,9 +50,9 @@ export default function FilterBar({
         {hasFilters && (
           <button
             onClick={onClear}
-            style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(229,9,20,0.12)", border: "1px solid rgba(229,9,20,0.3)", borderRadius: 50, padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#f87171", cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s", fontFamily: "inherit" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(229,9,20,0.22)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(229,9,20,0.12)")}>
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.3)", borderRadius: 50, padding: "7px 16px", fontSize: 12, fontWeight: 600, color: "#a78bfa", cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.2s", fontFamily: "inherit" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(124,58,237,0.22)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(124,58,237,0.12)")}>
             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>

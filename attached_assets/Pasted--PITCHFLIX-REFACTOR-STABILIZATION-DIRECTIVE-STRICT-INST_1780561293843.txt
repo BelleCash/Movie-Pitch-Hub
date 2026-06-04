@@ -1,0 +1,587 @@
+# PITCHFLIX REFACTOR & STABILIZATION DIRECTIVE (STRICT INSTRUCTIONS)
+
+You are working on the PitchFlix codebase.
+
+## CRITICAL NON-NEGOTIABLE RULES
+
+### RULE 1: NEVER DELETE FILES
+
+Under NO circumstance should you delete:
+
+* Source files
+* Components
+* Pages
+* APIs
+* Context providers
+* Hooks
+* Assets
+* Configuration files
+* Database integrations
+
+If a file appears unused:
+
+1. Move it into an archive folder.
+2. Document why it appears unused.
+3. Ask for approval before deletion.
+
+NO AUTOMATIC DELETIONS.
+
+---
+
+### RULE 2: ASK BEFORE MAKING DESTRUCTIVE CHANGES
+
+Before:
+
+* Renaming files
+* Replacing libraries
+* Removing dependencies
+* Removing routes
+* Modifying database schema
+* Rebuilding authentication
+* Altering billing logic
+
+You MUST:
+
+1. Produce a report.
+2. Explain impact.
+3. Ask for confirmation.
+
+Do NOT proceed automatically.
+
+---
+
+### RULE 3: SUPABASE IS THE OFFICIAL BACKEND
+
+Do NOT replace Supabase.
+
+Do NOT migrate away from Supabase.
+
+Treat Supabase as the primary backend for:
+
+* Authentication
+* Database
+* Storage
+* Realtime
+* User profiles
+* Pitches
+* Likes
+* Comments
+* Follows
+* Notifications
+* Billing metadata
+
+If alternative backends exist:
+
+* Flag them.
+* Report them.
+* Do not remove them without approval.
+
+---
+
+### RULE 4: FIX ERRORS BEFORE ADDING FEATURES
+
+Priority order:
+
+1. Build errors
+2. Runtime errors
+3. Broken routes
+4. Authentication issues
+5. Database issues
+6. Navigation issues
+7. UI bugs
+8. Billing bugs
+9. New features
+
+No new feature work before stability.
+
+---
+
+### RULE 5: PRODUCE REPORTS
+
+Before modifying anything:
+
+Generate:
+
+# AUDIT REPORT
+
+Including:
+
+* Missing pages
+* Broken imports
+* Circular dependencies
+* Dead routes
+* Duplicate components
+* Unused hooks
+* Broken API endpoints
+* Missing environment variables
+* Database issues
+* Billing issues
+* Build failures
+* Accessibility issues
+* Security issues
+
+Then wait for confirmation if major changes are required.
+
+---
+
+# TARGET STRUCTURE
+
+Reorganize into the following structure WITHOUT DELETING FILES.
+
+PitchFlix/
+
+api/
+billing/
+paystack-webhook.ts
+status.ts
+stripe-webhook.ts
+subscribe.ts
+
+public/
+favicon.svg
+opengraph.jpg
+
+src/
+
+components/
+
+auth/
+ProtectedRoute.tsx
+
+billing/
+InvestorPaywall.tsx
+PricingCard.tsx
+
+ui/
+accordion.tsx
+alert-dialog.tsx
+alert.tsx
+aspect-ratio.tsx
+avatar.tsx
+badge.tsx
+breadcrumb.tsx
+button-group.tsx
+button.tsx
+calendar.tsx
+card.tsx
+carousel.tsx
+chart.tsx
+checkbox.tsx
+collapsible.tsx
+command.tsx
+context-menu.tsx
+dialog.tsx
+drawer.tsx
+dropdown-menu.tsx
+empty.tsx
+field.tsx
+form.tsx
+hover-card.tsx
+input-group.tsx
+input-otp.tsx
+input.tsx
+item.tsx
+kbd.tsx
+label.tsx
+menubar.tsx
+navigation-menu.tsx
+pagination.tsx
+popover.tsx
+progress.tsx
+radio-group.tsx
+resizable.tsx
+scroll-area.tsx
+select.tsx
+separator.tsx
+sheet.tsx
+sidebar.tsx
+skeleton.tsx
+slider.tsx
+sonner.tsx
+spinner.tsx
+switch.tsx
+table.tsx
+tabs.tsx
+textarea.tsx
+toast.tsx
+toaster.tsx
+toggle-group.tsx
+toggle.tsx
+tooltip.tsx
+
+AuthModal.tsx
+CreatePitchModal.tsx
+FilterBar.tsx
+Hero.tsx
+Navbar.tsx
+PitchCard.tsx
+PitchGrid.tsx
+
+context/
+AuthContext.tsx
+BillingContext.tsx
+
+hooks/
+use-mobile.tsx
+use-toast.ts
+useNavAccess.ts
+usePitches.ts
+
+lib/
+
+billing/
+updateSubscription.ts
+
+roleAccess.ts
+supabase.ts
+supabaseAdmin.ts
+utils.ts
+
+pages/
+Dashboard.tsx
+Home.tsx
+InvestorDashboard.tsx
+Onboarding.tsx
+PitchDetail.tsx
+Pricing.tsx
+Settings.tsx
+not-found.tsx
+
+services/
+
+billing/
+
+providers/
+lemonSqueezyProvider.ts
+moniepointProvider.ts
+opayProvider.ts
+paddleProvider.ts
+paystackProvider.ts
+stripeProvider.ts
+
+billingService.ts
+
+pitchScoring.ts
+
+App.tsx
+index.css
+main.tsx
+types.ts
+
+.gitignore
+.npmrc
+README.md
+components.json
+index.html
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+tsconfig.base.json
+tsconfig.json
+vite.config.ts
+
+---
+
+# IRRELEVANT FOLDERS
+
+If irrelevant folders exist:
+
+DO NOT DELETE THEM.
+
+Instead:
+
+1. Move them to:
+
+/archive
+
+2. Generate a report:
+
+ARCHIVED_ITEMS.md
+
+Explaining:
+
+* Folder name
+* Original location
+* Why archived
+* What references still exist
+
+Then stop and ask for confirmation before removal.
+
+---
+
+# AUTHENTICATION AUDIT
+
+Inspect:
+
+* Login
+* Signup
+* Logout
+* Session persistence
+* Protected routes
+* User onboarding
+
+Verify:
+
+* AuthContext works correctly.
+* Supabase session refresh works.
+* Role permissions work.
+
+Fix:
+
+* Infinite redirects
+* Session loss
+* Unauthorized access
+* Broken route guards
+
+---
+
+# NAVIGATION AUDIT
+
+Verify:
+
+Navbar
+
+Dashboard
+
+Home
+
+Pitch Detail
+
+Pricing
+
+Settings
+
+Investor Dashboard
+
+Onboarding
+
+Check:
+
+* Broken links
+* Dead routes
+* Missing route definitions
+* Route loops
+* Navigation guards
+
+Fix all issues.
+
+---
+
+# PITCH SYSTEM AUDIT
+
+Verify:
+
+* Pitch creation
+* Pitch editing
+* Pitch display
+* Pitch loading
+* Pitch filtering
+* Pitch detail pages
+* Pitch images
+
+Fix:
+
+* Missing data
+* Broken fetches
+* Infinite loading
+* Empty states
+* Realtime failures
+
+---
+
+# CREATOR EXPERIENCE AUDIT
+
+Verify:
+
+* Profile loading
+* Creator dashboards
+* Engagement metrics
+* Follower counts
+* Likes
+* Upload flow
+
+Fix all issues.
+
+---
+
+# INVESTOR DASHBOARD AUDIT
+
+Verify:
+
+Investor Dashboard works fully.
+
+Check:
+
+* Investor access restrictions
+* Analytics loading
+* Trending pitches
+* Creator discovery
+* Data visualization
+
+If placeholder data exists:
+
+Clearly identify it.
+
+Do not fabricate production data.
+
+---
+
+# BILLING SYSTEM AUDIT
+
+Verify all providers:
+
+* Paystack
+* Stripe
+* Lemon Squeezy
+* Paddle
+* Opay
+* Moniepoint
+
+Requirements:
+
+* Provider abstraction layer
+* Billing service
+* Subscription status sync
+* Webhooks
+* Upgrade flows
+* Downgrade flows
+* Access restrictions
+
+Fix:
+
+* Broken subscriptions
+* Missing status updates
+* Access leaks
+
+---
+
+# DATABASE AUDIT
+
+Inspect Supabase.
+
+Verify:
+
+Tables:
+
+* users
+* profiles
+* pitches
+* likes
+* comments
+* follows
+* subscriptions
+* notifications
+
+Check:
+
+* Missing indexes
+* Missing relationships
+* Foreign key issues
+* Query inefficiencies
+
+Generate migration recommendations.
+
+DO NOT apply schema-breaking migrations without approval.
+
+---
+
+# UI AUDIT
+
+Verify:
+
+* Responsive layouts
+* Mobile navigation
+* Desktop navigation
+* Dark mode
+* Empty states
+* Loading states
+* Error states
+
+Fix:
+
+* Overflow
+* Layout breaks
+* Unresponsive components
+* Accessibility issues
+
+---
+
+# PERFORMANCE AUDIT
+
+Check:
+
+* Duplicate API calls
+* Excessive rerenders
+* Large bundle size
+* Unoptimized images
+* Slow queries
+
+Recommend fixes.
+
+Implement only safe optimizations.
+
+---
+
+# SECURITY AUDIT
+
+Verify:
+
+* Environment variables
+* Service role key exposure
+* Supabase policies
+* Protected routes
+* Billing endpoints
+* API validation
+
+Fix security vulnerabilities immediately.
+
+---
+
+# AI SCORING PREPARATION
+
+Verify presence of:
+
+services/pitchScoring.ts
+
+Prepare architecture for:
+
+* Originality score
+* Audience score
+* Commercial score
+* Trend score
+* Engagement score
+
+Do not implement fake AI.
+
+Create extensible architecture only.
+
+---
+
+# FINAL DELIVERABLE
+
+After audit and fixes:
+
+Generate:
+
+1. AUDIT_REPORT.md
+2. FIX_REPORT.md
+3. ARCHIVED_ITEMS.md
+4. ROUTE_MAP.md
+5. DATABASE_MAP.md
+6. BILLING_MAP.md
+7. SECURITY_REPORT.md
+
+Then provide:
+
+* Build status
+* Remaining issues
+* Risk assessment
+* Recommended next steps
+
+Remember:
+
+NEVER DELETE FILES.
+NEVER REPLACE SUPABASE.
+ALWAYS ASK BEFORE DESTRUCTIVE CHANGES.
+FIX ALL BROKEN FUNCTIONALITY FIRST.
+ORGANIZE THE PROJECT INTO THE TARGET STRUCTURE.

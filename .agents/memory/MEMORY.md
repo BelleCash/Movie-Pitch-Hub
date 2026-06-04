@@ -1,0 +1,4 @@
+- [PitchFlix auth source of truth](pitchflix-auth-sot.md) — onboarding redirect must use userProfile.onboardingComplete (profiles table), never user_metadata
+- [PitchFlix billing architecture](pitchflix-billing.md) — provider abstraction in billingService; 6 providers registered; roleAccess.ts is the gate engine
+- [PitchFlix design system](pitchflix-design.md) — purple only: #7c3aed/#8b5cf6/#a855f7/#5b21b6; no red, no demo language anywhere
+- [PitchFlix supabaseAdmin boundary](pitchflix-supabase-admin.md) — service role key must NEVER be in client code; supabaseAdmin.ts is a boundary guard only
